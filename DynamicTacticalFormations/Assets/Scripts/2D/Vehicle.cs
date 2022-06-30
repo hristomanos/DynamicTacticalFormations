@@ -52,88 +52,57 @@ public class Vehicle : MonoBehaviour
 
     Rigidbody2D m_Rigidbody2D;
 
-    [SerializeField] GameObject m_CirclePrefab;
-    GameObject m_TopLeftPoint;
-    GameObject m_BottomLeftPoint;
-    GameObject m_BottomRightPoint;
-    GameObject m_TopRightPoint;
+    
 
-    // Start is called before the first frame update
+    Vector3 m_TargetPos;
+
+    [SerializeField] GameObject TargetAgent;
+    
     void Start()
     {
        TryGetComponent<Rigidbody2D>(out m_Rigidbody2D);
-       GetScreenBorder();
+       
+       
+      m_Rigidbody2D.AddForce(transform.up * 150);
     }
 
-    // Update is called once per frame
+    
     void Update()
     {
-        StopGettingOffScreen();
-       // transform.position = Vector3.SmoothDamp(transform.position,m_TopRightPoint.transform.position,ref m_Velocity, m_MaxSpeed * Time.deltaTime);
+        //if (Input.GetMouseButtonDown(0))
+        //{
+        //   m_TargetPos = GetMouseWorldPosition();
+        //}
+        //transform.position = Vector3.SmoothDamp(transform.position,m_TargetPos,ref m_Velocity, m_MaxSpeed * Time.deltaTime);
     }
     private void FixedUpdate()
     {
-        m_Rigidbody2D.AddForce(transform.up * 4); 
+       
     }
 
-    void StopGettingOffScreen()
+    Vector3 GetMouseWorldPosition()
     {
-        //Top
-        if (transform.position.y > m_TopLeftPoint.transform.position.y)
-        {
-            transform.position = new Vector3(transform.position.x, m_BottomLeftPoint.transform.position.y, 0);
-        }
+        Vector3 mouseScreenPosition = Input.mousePosition;
+        Ray ray = Camera.main.ScreenPointToRay(mouseScreenPosition);
+        RaycastHit hit;
 
-        //Bottom
-        if (transform.position.y < m_BottomLeftPoint.transform.position.y)
-        {
-            transform.position = new Vector3(transform.position.x, m_TopLeftPoint.transform.position.y, 0);
-        }
+        Vector3 mouseWorldPosition;
 
-        //Left
-        if (transform.position.x < m_BottomLeftPoint.transform.position.x)
+        if (Physics.Raycast(ray, out hit))
         {
-            transform.position = new Vector3(m_BottomRightPoint.transform.position.x, transform.position.y, 0);
+            mouseWorldPosition = hit.point;
+            return mouseWorldPosition;
         }
-
-        //Right
-        if (transform.position.x > m_BottomRightPoint.transform.position.x)
+        else
         {
-            transform.position = new Vector3(m_BottomLeftPoint.transform.position.x, transform.position.y, 0);
+            return Vector3.zero;
         }
     }
 
-    void GetScreenBorder()
+    void Pursuit()
     {
-        ScreenBorder screenBorder = new ScreenBorder(Screen.width, Screen.height);
-
-        m_BottomRightPoint = Instantiate(m_CirclePrefab,GetWorldSpaceScreenBorder(screenBorder.rightBottomCorner),Quaternion.identity);
-        m_TopRightPoint    = Instantiate(m_CirclePrefab, GetWorldSpaceScreenBorder(screenBorder.rightTopCorner), Quaternion.identity);
-        m_BottomLeftPoint  = Instantiate(m_CirclePrefab, GetWorldSpaceScreenBorder(screenBorder.leftBottomCorner), Quaternion.identity);
-        m_TopLeftPoint     = Instantiate(m_CirclePrefab, GetWorldSpaceScreenBorder(screenBorder.leftTopCorner), Quaternion.identity);
-
+        //Vector3 ToEvader =
     }
 
-    Vector3 GetWorldSpaceScreenBorder(Vector2 screenPoint)
-    {
-        Vector3 worldSpacePoint = Camera.main.ScreenToWorldPoint(new Vector3(screenPoint.x, screenPoint.y, 0));
-        worldSpacePoint.z = 0;
 
-
-        return worldSpacePoint;
-    }
-
-    Vector3 Arrive(Vector3 targetPos)
-    {
-        Vector3 toTarget = targetPos - transform.position;
-
-        float dist = toTarget.magnitude;
-
-        if (dist > 0)
-        {
-
-        }
-
-        return toTarget;
-    }
 }
