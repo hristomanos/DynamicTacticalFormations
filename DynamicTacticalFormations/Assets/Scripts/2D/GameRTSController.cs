@@ -8,16 +8,16 @@ public class GameRTSController : MonoBehaviour
     Vector3 m_StartPosition;
     [SerializeField] LayerMask m_LayerMask;
 
-    // Start is called before the first frame update
+    
     void Start()
     {
         
     }
 
-    // Update is called once per frame
+    
     void Update()
     {
-        //Unit Selection by dragging the mouse
+        
         if (Input.GetMouseButtonDown(0))
         {
             m_StartPosition = GetMouseWorldPosition();
@@ -26,7 +26,7 @@ public class GameRTSController : MonoBehaviour
         // Unit Selection by dragging the mouse
         if (Input.GetMouseButtonUp(0))
         {
-            Debug.Log(GetMouseWorldPosition() + " " + m_StartPosition);
+            
             //Collider2D[] collider2DArray = Physics2D.OverlapAreaAll(m_StartPosition,GetMouseWorldPosition());
             
         }
@@ -53,5 +53,6 @@ public class GameRTSController : MonoBehaviour
         }
     }
 
+   
 
 }
