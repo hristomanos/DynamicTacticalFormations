@@ -10,22 +10,45 @@ public class selection_component : MonoBehaviour
     Animator m_Animator;
     GameObject m_UnitSelectedIndicator;
 
-    // Start is called before the first frame update
+    //Need to know about my leader of the group
+    public VirtualLeader m_LeaderObject;
+    VirtualLeader m_MyLeader;
+
+    //Need to know about where to go next
+    Vector3 m_TargetPos;
+    
+    //Need to know about my formation position
+    Vector3 m_FormationPos;
+
+    //Not sure what this is for
+    public float m_RepathDistance = 1.0f;
+
+    
     void Start()
     {
         if (transform.childCount > 0)
         {
-            //GetComponentInChildren<SkinnedMeshRenderer>().materials[0].color = Color.red;
             m_NavMeshAgent = GetComponent<NavMeshAgent>();
             m_Animator = GetComponent<Animator>();
             m_UnitSelectedIndicator = transform.Find("UnitSelectedIndicator").gameObject;
             m_UnitSelectedIndicator.SetActive(true);
+
+            m_LeaderObject = FindObjectOfType<VirtualLeader>();
+
+            if (m_LeaderObject == null)
+            {
+                Debug.LogError("ERROR: Leader is null for " + gameObject.name);
+                Debug.Break();
+            }
+
+            m_MyLeader = m_LeaderObject.GetComponent<VirtualLeader>();
+
+            StartCoroutine(CheckSquadTargetPosition());
         }
     }
 
     private void Update()
     {
-        MoveUnit();
         if (transform.childCount > 0)
         {
             m_Animator.SetFloat("Speed", m_NavMeshAgent.velocity.magnitude);
@@ -37,7 +60,6 @@ public class selection_component : MonoBehaviour
     {
         if (transform.childCount > 0)
         {
-           // GetComponentInChildren<SkinnedMeshRenderer>().materials[0].color = Color.white;
             m_UnitSelectedIndicator.SetActive(false);
         }
     }
@@ -50,6 +72,11 @@ public class selection_component : MonoBehaviour
         }
     }
 
+    void MoveUnit(Vector3 targetPosition)
+    {
+        m_TargetPos = targetPosition;
+        m_NavMeshAgent.SetDestination(m_TargetPos);
+    }
 
     Vector3 GetMouseWorldPosition()
     {
@@ -70,5 +97,25 @@ public class selection_component : MonoBehaviour
         }
     }
 
+    IEnumerator CheckSquadTargetPosition()
+    {
+        yield return null;
+        m_MyLeader.RegisterUnitToSquad(this);
+
+        while(m_MyLeader.enabled)
+        {
+            yield return null;
+
+            Vector3 nextTargetPos;
+            m_FormationPos = m_MyLeader.GetMemberPosition(this,out nextTargetPos);
+
+            if ((nextTargetPos - m_TargetPos).sqrMagnitude > (m_RepathDistance * m_RepathDistance))
+            {
+                m_TargetPos = nextTargetPos;
+                m_NavMeshAgent.SetDestination(m_TargetPos);
+            }
+        }
+
+    }
 
 }
