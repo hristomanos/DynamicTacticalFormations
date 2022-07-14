@@ -7,7 +7,7 @@ public class selection_component : MonoBehaviour
 {
 
     NavMeshAgent m_NavMeshAgent;
-    Animator m_Animator;
+    
     GameObject m_UnitSelectedIndicator;
 
     //Need to know about my leader of the group
@@ -20,16 +20,17 @@ public class selection_component : MonoBehaviour
     //Need to know about my formation position
     Vector3 m_FormationPos;
 
-    //Not sure what this is for
+    //Not sure what this is for ???????????????
     public float m_RepathDistance = 1.0f;
 
-    
+   
+
+
     void Start()
     {
         if (transform.childCount > 0)
         {
             m_NavMeshAgent = GetComponent<NavMeshAgent>();
-            m_Animator = GetComponent<Animator>();
             m_UnitSelectedIndicator = transform.Find("UnitSelectedIndicator").gameObject;
             m_UnitSelectedIndicator.SetActive(true);
 
@@ -49,10 +50,7 @@ public class selection_component : MonoBehaviour
 
     private void Update()
     {
-        if (transform.childCount > 0)
-        {
-            m_Animator.SetFloat("Speed", m_NavMeshAgent.velocity.magnitude);
-        }
+        
     }
 
 
@@ -62,14 +60,9 @@ public class selection_component : MonoBehaviour
         {
             m_UnitSelectedIndicator.SetActive(false);
         }
-    }
 
-    void MoveUnit()
-    {
-        if (Input.GetMouseButtonDown(1))
-        {
-            m_NavMeshAgent.SetDestination(GetMouseWorldPosition());
-        }
+        //Remove member from the list
+        m_MyLeader.DeregisterUnitFromSquad(this);
     }
 
     void MoveUnit(Vector3 targetPosition)
@@ -78,24 +71,7 @@ public class selection_component : MonoBehaviour
         m_NavMeshAgent.SetDestination(m_TargetPos);
     }
 
-    Vector3 GetMouseWorldPosition()
-    {
-        Vector3 mouseScreenPosition = Input.mousePosition;
-        Ray ray = Camera.main.ScreenPointToRay(mouseScreenPosition);
-        RaycastHit hit;
-
-        Vector3 mouseWorldPosition;
-
-        if (Physics.Raycast(ray, out hit))
-        {
-            mouseWorldPosition = hit.point;
-            return mouseWorldPosition;
-        }
-        else
-        {
-            return Vector3.zero;
-        }
-    }
+  
 
     IEnumerator CheckSquadTargetPosition()
     {
@@ -109,6 +85,12 @@ public class selection_component : MonoBehaviour
             Vector3 nextTargetPos;
             m_FormationPos = m_MyLeader.GetMemberPosition(this,out nextTargetPos);
 
+            if (Vector3.Distance(m_TargetPos, transform.position) <= m_NavMeshAgent.stoppingDistance)
+            {
+                CopyRotation(m_MyLeader.gameObject);
+            }
+
+            //if then new pos is not futher than repath distance
             if ((nextTargetPos - m_TargetPos).sqrMagnitude > (m_RepathDistance * m_RepathDistance))
             {
                 m_TargetPos = nextTargetPos;
@@ -116,6 +98,20 @@ public class selection_component : MonoBehaviour
             }
         }
 
+    }
+
+
+    private void FaceTarget(Vector3 destination)
+    {
+        Vector3 lookPos = destination - transform.position;
+        lookPos.y = 0;
+        Quaternion rotation = Quaternion.LookRotation(lookPos);
+        transform.rotation = Quaternion.Slerp(transform.rotation, rotation, 5);
+    }
+
+    public void CopyRotation(GameObject Target)
+    {
+        transform.rotation = Target.transform.localRotation;
     }
 
 }

@@ -72,7 +72,7 @@ public class UnitFormationControls : MonoBehaviour
         LineRenderer.enabled = false;
 
         //Starts off with a line formation
-        SetUnitFormation(new LineFormation(unitSpacing));
+       // SetUnitFormation(new LineFormation(unitSpacing));
 
         // Initial UI update
         UpdateUnitCountText();
@@ -227,8 +227,8 @@ public class UnitFormationControls : MonoBehaviour
 
     #region User Interactions
 
-    public void LineFormationSelected() =>
-        SetUnitFormation(new LineFormation(unitSpacing));
+   // public void LineFormationSelected() =>
+       // SetUnitFormation(new LineFormation(unitSpacing));
 
     public void CircleFormationSelected() =>
         SetUnitFormation(new CircleFormation(unitSpacing));
@@ -253,7 +253,7 @@ public class UnitFormationControls : MonoBehaviour
 
         if (currentFormation is LineFormation)
         {
-            currentFormation = new LineFormation(unitSpacing);
+           // currentFormation = new LineFormation(unitSpacing);
         }
         else if (currentFormation is RectangleFormation rectangleFormation)
         {

@@ -22,8 +22,21 @@ public class VirtualLeader : MonoBehaviour
     //Need to know what is the max number of members
     uint m_MaxMemberCapacity;
 
-    //???????????
-    //Current formation index
+    int m_CurrentFormationIndex;
+
+    //TEST
+    KeyCode[] keyCodes = {
+            KeyCode.Alpha1,
+            KeyCode.Alpha2,
+            KeyCode.Alpha3,
+            KeyCode.Alpha4,
+            KeyCode.Alpha5,
+            KeyCode.Alpha6,
+            KeyCode.Alpha7,
+            KeyCode.Alpha8,
+            KeyCode.Alpha9
+
+    };
 
     // Start is called before the first frame update
     void Start()
@@ -31,7 +44,9 @@ public class VirtualLeader : MonoBehaviour
         m_Formations = new List<Formation>();
         m_Agent = GetComponent<NavMeshAgent>();
         m_Members = new List<selection_component>();
-        
+
+        m_CurrentFormationIndex = 0;
+
         //Initilise formations list with formations
         CreateFormations();
     }
@@ -39,8 +54,25 @@ public class VirtualLeader : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-    }
+        if (Input.GetMouseButtonDown(1))
+        {
+            m_Agent.SetDestination(GetMouseWorldPosition());
+        }
 
+        for (int i = 0; i < keyCodes.Length; i++)
+        {
+            if (Input.GetKey(keyCodes[i]))
+            {
+                int numberPressed = i + 1;
+                if (numberPressed <= m_Formations.Count - 1)
+                {
+                    m_CurrentFormationIndex = numberPressed;
+                }
+            }
+        }
+        
+    }
+        
     //Populate list of formations by checking that all formation are in the list once
     //And storing the maximum number of units for each formation
     void CreateFormations()
@@ -56,6 +88,18 @@ public class VirtualLeader : MonoBehaviour
                 {
                     case FormationType.WEDGE:
                         m_Formations.Add(new WedgeFormation());
+                        break;
+                    case FormationType.LINE:
+                        m_Formations.Add(new LineFormation());
+                        break;
+                    case FormationType.SQUARE:
+                        m_Formations.Add(new SquareFormation());
+                        break;
+                    case FormationType.COLUMN:
+                        m_Formations.Add(new ColumnFormation());
+                        break;
+                    case FormationType.INVERTEDWEDGE:
+                        m_Formations.Add(new InvertedWedgeFormation());
                         break;
                     default:
                         Debug.LogError("Formation requested for " + gameObject.name + " is not implemented! ");
@@ -103,6 +147,28 @@ public class VirtualLeader : MonoBehaviour
         }
     }
 
+    public bool DeregisterUnitFromSquad(selection_component unit)
+    {
+        //We reached maximum squad capacity
+        if (m_Members.Count <= 0)
+        {
+            Debug.LogWarning("WARNING: Squad is already empty!");
+            return false;
+        }
+
+        //Make sure no units are added twice!
+        if (m_Members.Exists(u => u.GetInstanceID() == unit.GetInstanceID()))
+        {
+            m_Members.Remove(unit);
+            return true;
+        }
+        else
+        {
+            Debug.LogWarning("WARNING: " + unit.name + " is not in the squad!");
+            return false;
+        }
+    }
+
     public Vector3 GetMemberPosition(selection_component member, out Vector3 targetPos)
     {
         targetPos = Vector3.zero;
@@ -117,7 +183,7 @@ public class VirtualLeader : MonoBehaviour
         if (unitIndex >= 0)
         {
 
-            respectiveUnitPos = m_Formations[0].GetUnitPosition(unitIndex);
+            respectiveUnitPos = m_Formations[m_CurrentFormationIndex].GetUnitPosition(unitIndex);
         }
         else
         {
@@ -129,12 +195,43 @@ public class VirtualLeader : MonoBehaviour
         //Tranform Local formation pos to world space
         unitPos = transform.TransformPoint(respectiveUnitPos);
 
-        //Get predicted pos ?????????????????????????????????????????????????
+
+        //Predict your optimised position relative to the formation while moving
+
+        //Terminate scanning the path at this distance.
         float maxDistance = m_Agent.speed * 0.5f;
+
         NavMeshHit prediction;
+        //Look ahead a specified distance
         m_Agent.SamplePathPosition(1, maxDistance, out prediction);
+
+        //Add respective formation position to next predicted step to 
         targetPos = transform.TransformPoint(transform.InverseTransformPoint(prediction.position) + respectiveUnitPos);
+
+       // Debug.Log("Remaining : " + m_Agent.remainingDistance);
+
 
         return unitPos;
     }
+
+    Vector3 GetMouseWorldPosition()
+    {
+        Vector3 mouseScreenPosition = Input.mousePosition;
+        Ray ray = Camera.main.ScreenPointToRay(mouseScreenPosition);
+        RaycastHit hit;
+
+        Vector3 mouseWorldPosition;
+
+        if (Physics.Raycast(ray, out hit))
+        {
+            mouseWorldPosition = hit.point;
+            return mouseWorldPosition;
+        }
+        else
+        {
+            return Vector3.zero;
+        }
+    }
+
+
 }

@@ -4,9 +4,9 @@ using UnityEngine;
 
 //This script is responsible for assigning positions for a wedge formation. It also calculates the group's centre of mass
 
-public class WedgeFormation : Formation
+public class SquareFormation : Formation
 {
-    public WedgeFormation() : base(4,FormationType.WEDGE)
+    public SquareFormation() : base(4,FormationType.SQUARE)
     {
 
     }
@@ -14,9 +14,9 @@ public class WedgeFormation : Formation
     protected override void AssignPositions()
     {
         m_UnitPositions.Add(new Vector3(0.0f, 0.0f, 0.0f));
-        m_UnitPositions.Add(new Vector3(-2.0f, 0.0f, -1.0f));
-        m_UnitPositions.Add(new Vector3(2.0f, 0.0f, -1.0f));
-        m_UnitPositions.Add(new Vector3(-4.0f, 0.0f, -2.0f));
+        m_UnitPositions.Add(new Vector3(2.0f, 0.0f, 0.0f));
+        m_UnitPositions.Add(new Vector3(0.0f, 0.0f, -2.0f));
+        m_UnitPositions.Add(new Vector3(2.0f, 0.0f, -2.0f));
 
         CalculateCentreOfMass();
     }

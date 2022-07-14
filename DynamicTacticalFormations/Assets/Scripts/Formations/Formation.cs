@@ -8,6 +8,10 @@ public enum FormationType
 {
     NULL = 0,
     WEDGE,
+    LINE,
+    COLUMN,
+    SQUARE,
+    INVERTEDWEDGE,
 }
 
 

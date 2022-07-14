@@ -9,6 +9,8 @@ public class global_selection : MonoBehaviour
 
     bool dragSelect;
 
+    [SerializeField] LayerMask m_LayerMask;
+
     //Collider variables
     //=======================================================//
 
@@ -57,7 +59,7 @@ public class global_selection : MonoBehaviour
             {
                 Ray ray = Camera.main.ScreenPointToRay(p1);
 
-                if(Physics.Raycast(ray,out hit, 50000.0f))
+                if(Physics.Raycast(ray,out hit, 50000.0f, m_LayerMask))
                 {
                     if (Input.GetKey(KeyCode.LeftShift)) //inclusive select
                     {
