@@ -35,7 +35,6 @@ public class VirtualLeader : MonoBehaviour
             KeyCode.Alpha7,
             KeyCode.Alpha8,
             KeyCode.Alpha9
-
     };
 
     // Start is called before the first frame update
@@ -171,8 +170,8 @@ public class VirtualLeader : MonoBehaviour
 
     public Vector3 GetMemberPosition(selection_component member, out Vector3 targetPos)
     {
-        targetPos = Vector3.zero;
         Vector3 unitPos = Vector3.zero;
+        targetPos = Vector3.zero;
         Vector3 respectiveUnitPos = Vector3.zero; //position in the formation
         int unitIndex = -1;
 
@@ -182,7 +181,7 @@ public class VirtualLeader : MonoBehaviour
         //if unit is a member then get formation position
         if (unitIndex >= 0)
         {
-
+            //get unit's position in the formation relative to the origin
             respectiveUnitPos = m_Formations[m_CurrentFormationIndex].GetUnitPosition(unitIndex);
         }
         else
@@ -192,10 +191,13 @@ public class VirtualLeader : MonoBehaviour
         }
 
 
+        //Transforms the relative position into world space using teh VL's position as the local origin
         //Tranform Local formation pos to world space
         unitPos = transform.TransformPoint(respectiveUnitPos);
 
 
+        //Use the unit's speed to project ahead on its current path and get an estimate of where the unit will soon be
+        
         //Predict your optimised position relative to the formation while moving
 
         //Terminate scanning the path at this distance.
@@ -205,6 +207,7 @@ public class VirtualLeader : MonoBehaviour
         //Look ahead a specified distance
         m_Agent.SamplePathPosition(1, maxDistance, out prediction);
 
+        //Calculate a new target position by adding the predicted position in the VL's local space to the unit's position within the formation.
         //Add respective formation position to next predicted step to 
         targetPos = transform.TransformPoint(transform.InverseTransformPoint(prediction.position) + respectiveUnitPos);
 

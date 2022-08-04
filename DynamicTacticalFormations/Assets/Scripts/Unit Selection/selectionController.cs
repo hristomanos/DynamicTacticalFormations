@@ -2,7 +2,11 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class global_selection : MonoBehaviour
+
+//This script is responsible for receiving mouse input and selecting units by adding to the dictionary
+//or rubber band them by generating a 2D rectangular mesh with a mouse drag
+
+public class selectionController : MonoBehaviour
 {
     selected_dictionary selected_table;
     RaycastHit hit;
