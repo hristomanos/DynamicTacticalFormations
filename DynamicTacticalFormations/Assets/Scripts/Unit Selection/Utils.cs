@@ -2,22 +2,23 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-//used for drawing our marquee
+//This script is responsible for drawing the marquee (2D Rect for rubber banding)
+
 public static class Utils
 {
-    static Texture2D _whiteTexture;
+    static Texture2D m_WhiteTexture;
     public static Texture2D WhiteTexture
     {
         get
         {
-            if (_whiteTexture == null)
+            if (m_WhiteTexture == null)
             {
-                _whiteTexture = new Texture2D(1, 1);
-                _whiteTexture.SetPixel(0, 0, Color.white);
-                _whiteTexture.Apply();
+                m_WhiteTexture = new Texture2D(1, 1);
+                m_WhiteTexture.SetPixel(0, 0, Color.white);
+                m_WhiteTexture.Apply();
             }
 
-            return _whiteTexture;
+            return m_WhiteTexture;
         }
     }
 
@@ -40,14 +41,17 @@ public static class Utils
         Utils.DrawScreenRect(new Rect(rect.xMin, rect.yMax - thickness, rect.width, thickness), color);
     }
 
+
     public static Rect GetScreenRect(Vector3 screenPosition1, Vector3 screenPosition2)
     {
         // Move origin from bottom left to top left
         screenPosition1.y = Screen.height - screenPosition1.y;
         screenPosition2.y = Screen.height - screenPosition2.y;
+
         // Calculate corners
         var topLeft = Vector3.Min(screenPosition1, screenPosition2);
         var bottomRight = Vector3.Max(screenPosition1, screenPosition2);
+
         // Create Rect
         return Rect.MinMaxRect(topLeft.x, topLeft.y, bottomRight.x, bottomRight.y);
     }

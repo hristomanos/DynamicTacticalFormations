@@ -6,7 +6,7 @@ using UnityEngine;
 
 public class WedgeFormation : Formation
 {
-    public WedgeFormation() : base(4,FormationType.WEDGE)
+    public WedgeFormation() : base(FormationType.WEDGE)
     {
 
     }

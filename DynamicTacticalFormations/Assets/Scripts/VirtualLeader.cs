@@ -17,7 +17,7 @@ public class VirtualLeader : MonoBehaviour
     NavMeshAgent m_Agent;
 
     //Need to know about squad members
-    List<selection_component> m_Members;
+    List<SelectedComponent> m_Members;
 
     //Need to know what is the max number of members
     uint m_MaxMemberCapacity;
@@ -42,7 +42,7 @@ public class VirtualLeader : MonoBehaviour
     {
         m_Formations = new List<Formation>();
         m_Agent = GetComponent<NavMeshAgent>();
-        m_Members = new List<selection_component>();
+        m_Members = new List<SelectedComponent>();
 
         m_CurrentFormationIndex = 0;
 
@@ -72,6 +72,33 @@ public class VirtualLeader : MonoBehaviour
         
     }
         
+    
+
+    
+    public bool RegisterUnitToSquad(SelectedComponent unit)
+    {
+        //We reached maximum squad capacity
+        //if (m_Members.Count == m_MaxMemberCapacity)
+        //{
+        //    Debug.LogWarning("WARNING: Squad has reached max capacity!");
+        //    return false;
+        //}
+
+        //Make sure no units are added twice!
+        if (!m_Members.Exists(u => u.GetInstanceID() == unit.GetInstanceID()))
+        {
+            m_Members.Add(unit);
+            return true;
+        }
+        else
+        {
+            Debug.LogWarning("WARNING: " + unit.name + " is already in the squad!");
+            return false;
+        }
+
+        
+    }
+
     //Populate list of formations by checking that all formation are in the list once
     //And storing the maximum number of units for each formation
     void CreateFormations()
@@ -112,41 +139,19 @@ public class VirtualLeader : MonoBehaviour
         }
 
         //Get Maximum number of members in a formation
-        m_MaxMemberCapacity = m_Formations[0].MaxUnits;
+        //m_MaxMemberCapacity = m_Formations[0].MaxUnits;
 
-        foreach (Formation formation in m_Formations)
-        {
-            if (formation.MaxUnits < m_MaxMemberCapacity)
-            {
-                m_MaxMemberCapacity = formation.MaxUnits;
-            }
-        }
+        //foreach (Formation formation in m_Formations)
+        //{
+        //    if (formation.MaxUnits < m_MaxMemberCapacity)
+        //    {
+        //        m_MaxMemberCapacity = formation.MaxUnits;
+        //    }
+        //}
     }
 
-    
-    public bool RegisterUnitToSquad(selection_component unit)
-    {
-        //We reached maximum squad capacity
-        if (m_Members.Count == m_MaxMemberCapacity)
-        {
-            Debug.LogWarning("WARNING: Squad has reached max capacity!");
-            return false;
-        }
 
-        //Make sure no units are added twice!
-        if (!m_Members.Exists(u => u.GetInstanceID() == unit.GetInstanceID()))
-        {
-            m_Members.Add(unit);
-            return true;
-        }
-        else
-        {
-            Debug.LogWarning("WARNING: " + unit.name + " is already in the squad!");
-            return false;
-        }
-    }
-
-    public bool DeregisterUnitFromSquad(selection_component unit)
+    public bool DeregisterUnitFromSquad(SelectedComponent unit)
     {
         //We reached maximum squad capacity
         if (m_Members.Count <= 0)
@@ -168,15 +173,18 @@ public class VirtualLeader : MonoBehaviour
         }
     }
 
-    public Vector3 GetMemberPosition(selection_component member, out Vector3 targetPos)
+    //Gets relative position in the formation for each squad unit each frame.
+    public Vector3 GetMemberPosition(SelectedComponent member, out Vector3 targetPos)
     {
         Vector3 unitPos = Vector3.zero;
         targetPos = Vector3.zero;
         Vector3 respectiveUnitPos = Vector3.zero; //position in the formation
         int unitIndex = -1;
 
-        //Find the index in members list for that unit
+        //Find the index in members list for that unit 
         unitIndex = m_Members.FindIndex(u => u.GetInstanceID() == member.GetInstanceID());
+
+        
 
         //if unit is a member then get formation position
         if (unitIndex >= 0)

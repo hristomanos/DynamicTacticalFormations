@@ -24,7 +24,7 @@ public abstract class Formation
     protected List<Vector3> m_UnitPositions;
 
     //Need to know the maximum number of unit in the formation
-    protected uint m_MaxUnits;
+    //protected uint m_MaxUnits;
 
     //Need to know about the centre of the squad's mass
     protected Vector3 m_ExpectedCentreOfMass;
@@ -35,7 +35,7 @@ public abstract class Formation
 
     public List<Vector3> UnitPositions { get => m_UnitPositions; }
     
-    public uint MaxUnits { get => m_MaxUnits; }
+   // public uint MaxUnits { get => m_MaxUnits; }
 
     public Vector3 ExpectedCentreOfMass { get => m_ExpectedCentreOfMass; }
     
@@ -44,9 +44,9 @@ public abstract class Formation
     public float ExpectedCentreOfMassSqrMagnitude { get => m_ExpectedCentreOfMass.sqrMagnitude; }
 
     //Initilisation
-    public Formation(uint maxUnits, FormationType formationType)
+    public Formation(FormationType formationType)
     {
-        m_MaxUnits = maxUnits;
+       // m_MaxUnits = maxUnits;
         m_Type = formationType;
         m_UnitPositions = new List<Vector3>();
         AssignPositions();
@@ -59,6 +59,7 @@ public abstract class Formation
 
         if (unitIndex > m_UnitPositions.Count - 1)
         {
+            Debug.Log("Error: index: " + unitIndex + "Count: " + m_UnitPositions.Count);
             Debug.LogError("ERROR: Index of unit position requested is too large!");
             Debug.Break();
             return unitPosition;

@@ -135,7 +135,7 @@ GameObject:
   - component: {fileID: 60248519}
   - component: {fileID: 60248518}
   m_Layer: 0
-  m_Name: SelectionOfUnitsController
+  m_Name: SelectionController
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -164,7 +164,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 60248515}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 59115370f9f5e7246a1a10ccdb1d5d7e, type: 3}
+  m_Script: {fileID: 11500000, guid: 287c7f52ad3d405409d4487f9d55bc05, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!114 &60248519
@@ -422,6 +422,10 @@ PrefabInstance:
     - target: {fileID: 918118094263815812, guid: fe2a5bf9b4c2d4a4b9853a8506f18c40, type: 3}
       propertyPath: m_IsKinematic
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2297071859435337502, guid: fe2a5bf9b4c2d4a4b9853a8506f18c40, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: fe2a5bf9b4c2d4a4b9853a8506f18c40, type: 3}

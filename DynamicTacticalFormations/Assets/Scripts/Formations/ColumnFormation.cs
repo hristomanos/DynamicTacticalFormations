@@ -6,7 +6,7 @@ using UnityEngine;
 
 public class ColumnFormation : Formation
 {
-    public ColumnFormation() : base(4,FormationType.COLUMN)
+    public ColumnFormation() : base(FormationType.COLUMN)
     {
 
     }

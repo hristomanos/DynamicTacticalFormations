@@ -2,130 +2,159 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+///This script is responsible for receiving mouse input and selecting units by adding to the dictionary
+///or rubber band them by generating a 2D rectangular mesh with a mouse drag.
+///
+/// it can:
+///     * Receive mouse input when clicked, dragged and released.
+///     * Cast a ray and add found gameObject to the dictionary
+///     * Generate and draw a 2D rectangular mesh.
+///     * Cast four rays from each corner of the 2D rect to the ground.
+///     * Generate 3D rect collider on the ground from those four rays.
+///     * Add gameObjects that overlap with the 3D collider to the dictionary.
+///     * make inclusive and exlusive selection using the left shift key.
+/// </summary>
 
-//This script is responsible for receiving mouse input and selecting units by adding to the dictionary
-//or rubber band them by generating a 2D rectangular mesh with a mouse drag
-
-public class selectionController : MonoBehaviour
+public class SelectionController : MonoBehaviour
 {
-    selected_dictionary selected_table;
-    RaycastHit hit;
-
-    bool dragSelect;
-
+    public static SelectionController Instance { get; private set; }
+    
     [SerializeField] LayerMask m_LayerMask;
+    
+    SelectedDictionary m_SelectedTable;
+    RaycastHit m_Hit;
+    bool m_DragSelect;
+    float m_MouseDragThreshold;
 
-    //Collider variables
-    //=======================================================//
+    public SelectedDictionary SelectedTable { get; }
 
-    MeshCollider selectionBox;
-    Mesh selectionMesh;
 
-    Vector3 p1;
-    Vector3 p2;
+    //================= Collider variables =========================//
 
-    //the corners of our 2d selection box
-    Vector2[] corners;
+    MeshCollider m_SelectionBox;
+    Mesh m_SelectionMesh;
 
-    //the vertices of our meshcollider
-    Vector3[] verts;
-    Vector3[] vecs;
+    Vector3 m_MousePoint1;
+    Vector3 m_MousePoint2;
 
-    // Start is called before the first frame update
-    void Start()
-    {        
-        selected_table = GetComponent<selected_dictionary>();
-        dragSelect = false;
+    //The corners of our 2d selection box
+    Vector2[] m_Corners;
+
+    //The vertices of our meshcollider
+    Vector3[] m_Verts;
+    Vector3[] m_Vecs;
+
+    private void Awake()
+    {
+        if (Instance == null)
+        {
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
     }
 
-    // Update is called once per frame
+
+    void Start()
+    {        
+        m_SelectedTable = GetComponent<SelectedDictionary>();
+        m_DragSelect = false;
+        m_MouseDragThreshold = 40;
+    }
+
     void Update()
     {
-        //1. when left mouse button clicked (but not released)
+        //If left mouse button clicked (but not released)
         if (Input.GetMouseButtonDown(0))
         {
-            p1 = Input.mousePosition;
+            m_MousePoint1 = Input.mousePosition;
         }
 
-        //2. while left mouse button held
+        //While left mouse button is held
         if (Input.GetMouseButton(0))
         {
-            if((p1 - Input.mousePosition).magnitude > 40)
+            if((m_MousePoint1 - Input.mousePosition).magnitude > m_MouseDragThreshold)
             {
-                dragSelect = true;
+                m_DragSelect = true;
             }
         }
 
-        //3. when mouse button comes up
+        //When left mouse button is released
         if (Input.GetMouseButtonUp(0))
         {
-            if(dragSelect == false) //single select
+            //Single select
+            if (m_DragSelect == false) 
             {
-                Ray ray = Camera.main.ScreenPointToRay(p1);
+                Ray ray = Camera.main.ScreenPointToRay(m_MousePoint1);
 
-                if(Physics.Raycast(ray,out hit, 50000.0f, m_LayerMask))
+                if(Physics.Raycast(ray,out m_Hit, 50000.0f, m_LayerMask))
                 {
-                    if (Input.GetKey(KeyCode.LeftShift)) //inclusive select
+                    //Inclusive select - Select multiple units with each click
+                    if (Input.GetKey(KeyCode.LeftShift)) 
                     {
-                        selected_table.addSelected(hit.transform.gameObject);
+                        m_SelectedTable.AddSelected(m_Hit.transform.gameObject);
                     }
-                    else //exclusive selected
+                    else //exclusive select - Select one unit
                     {
-                        selected_table.deselectAll();
-                        selected_table.addSelected(hit.transform.gameObject);
+                        m_SelectedTable.DeselectAll();
+                        m_SelectedTable.AddSelected(m_Hit.transform.gameObject);
                     }
                 }
                 else //if we didnt hit something
                 {
                     if (Input.GetKey(KeyCode.LeftShift))
                     {
-                        //do nothing
+                        //do nothing because other units might already be selected. Prevents inconvenience.
                     }
                     else
                     {
-                        selected_table.deselectAll();
+                        m_SelectedTable.DeselectAll();
                     }
                 }
             }
             else //marquee select
             {
-                verts = new Vector3[4];
-                vecs = new Vector3[4];
+                m_Verts = new Vector3[4];
+                m_Vecs = new Vector3[4];
                 int i = 0;
-                p2 = Input.mousePosition;
-                corners = getBoundingBox(p1, p2);
+                m_MousePoint2 = Input.mousePosition;
+                m_Corners = getBoundingBox(m_MousePoint1, m_MousePoint2);
 
-                foreach (Vector2 corner in corners)
+                foreach (Vector2 corner in m_Corners)
                 {
                     Ray ray = Camera.main.ScreenPointToRay(corner);
 
-                    if (Physics.Raycast(ray, out hit, 50000.0f, (1 << 8)))
+                    if (Physics.Raycast(ray, out m_Hit, 50000.0f, (1 << 8)))
                     {
-                        verts[i] = new Vector3(hit.point.x, hit.point.y, hit.point.z);
-                        vecs[i] = ray.origin - hit.point;
-                        Debug.DrawLine(Camera.main.ScreenToWorldPoint(corner), hit.point, Color.red, 1.0f);
+                        m_Verts[i] = new Vector3(m_Hit.point.x, m_Hit.point.y, m_Hit.point.z);
+                        m_Vecs[i] = ray.origin - m_Hit.point;
+                        Debug.DrawLine(Camera.main.ScreenToWorldPoint(corner), m_Hit.point, Color.red, 1.0f);
                     }
                     i++;
                 }
 
                 //generate the mesh
-                selectionMesh = generateSelectionMesh(verts,vecs);
+                m_SelectionMesh = generateSelectionMesh(m_Verts,m_Vecs);
 
-                selectionBox = gameObject.AddComponent<MeshCollider>();
-                selectionBox.sharedMesh = selectionMesh;
-                selectionBox.convex = true;
-                selectionBox.isTrigger = true;
+                m_SelectionBox = gameObject.AddComponent<MeshCollider>();
+                m_SelectionBox.sharedMesh = m_SelectionMesh;
+                m_SelectionBox.convex = true;
+                m_SelectionBox.isTrigger = true;
 
                 if (!Input.GetKey(KeyCode.LeftShift))
                 {
-                    selected_table.deselectAll();
+                    m_SelectedTable.DeselectAll();
                 }
 
-               Destroy(selectionBox, 0.02f);
+               Destroy(m_SelectionBox, 0.02f);
 
             }//end marquee select
 
-            dragSelect = false;
+            m_DragSelect = false;
 
         }
        
@@ -133,13 +162,15 @@ public class selectionController : MonoBehaviour
 
     private void OnGUI()
     {
-        if(dragSelect == true)
+        //Draw rectangle on game screen
+        if(m_DragSelect == true)
         {
-            var rect = Utils.GetScreenRect(p1, Input.mousePosition);
+            var rect = Utils.GetScreenRect(m_MousePoint1, Input.mousePosition);
             Utils.DrawScreenRect(rect, new Color(0.8f, 0.8f, 0.95f, 0.25f));
             Utils.DrawScreenRectBorder(rect, 2, new Color(0.8f, 0.8f, 0.95f));
         }
     }
+
 
     //create a bounding box (4 corners in order) from the start and end mouse position
     Vector2[] getBoundingBox(Vector2 p1,Vector2 p2)
@@ -185,7 +216,10 @@ public class selectionController : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        selected_table.addSelected(other.gameObject);
+        m_SelectedTable.AddSelected(other.gameObject);
     }
+
+
+
 
 }
