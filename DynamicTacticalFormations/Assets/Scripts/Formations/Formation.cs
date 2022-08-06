@@ -43,11 +43,14 @@ public abstract class Formation
     
     public float ExpectedCentreOfMassSqrMagnitude { get => m_ExpectedCentreOfMass.sqrMagnitude; }
 
+    protected int m_UnitAmount;
+
     //Initilisation
-    public Formation(FormationType formationType)
+    public Formation(int unitAmount, FormationType formationType)
     {
        // m_MaxUnits = maxUnits;
         m_Type = formationType;
+        m_UnitAmount = unitAmount;
         m_UnitPositions = new List<Vector3>();
         AssignPositions();
     }

@@ -26,6 +26,7 @@ public class VirtualLeader : MonoBehaviour
 
     //TEST
     KeyCode[] keyCodes = {
+            KeyCode.Alpha0,
             KeyCode.Alpha1,
             KeyCode.Alpha2,
             KeyCode.Alpha3,
@@ -47,8 +48,14 @@ public class VirtualLeader : MonoBehaviour
         m_CurrentFormationIndex = 0;
 
         //Initilise formations list with formations
-        CreateFormations();
+       SelectionController.Instance.onUnitSelectionComplete += CreateFormations;
     }
+
+    private void OnDestroy()
+    {
+        SelectionController.Instance.onUnitSelectionComplete -= CreateFormations;
+    }
+
 
     // Update is called once per frame
     void Update()
@@ -66,6 +73,10 @@ public class VirtualLeader : MonoBehaviour
                 if (numberPressed <= m_Formations.Count - 1)
                 {
                     m_CurrentFormationIndex = numberPressed;
+                }
+                else if (Input.GetKey(keyCodes[4]))
+                {
+                    m_CurrentFormationIndex = 0;
                 }
             }
         }
@@ -101,7 +112,7 @@ public class VirtualLeader : MonoBehaviour
 
     //Populate list of formations by checking that all formation are in the list once
     //And storing the maximum number of units for each formation
-    void CreateFormations()
+    void CreateFormations(int unitAmount)
     {
         //We check that for each formation type in the list
         foreach (FormationType type in m_FormationTypes)
@@ -113,19 +124,19 @@ public class VirtualLeader : MonoBehaviour
                 switch (type)
                 {
                     case FormationType.WEDGE:
-                        m_Formations.Add(new WedgeFormation());
+                        m_Formations.Add(new WedgeFormation(unitAmount));
                         break;
                     case FormationType.LINE:
-                        m_Formations.Add(new LineFormation());
+                        m_Formations.Add(new LineFormation(unitAmount));
                         break;
                     case FormationType.SQUARE:
-                        m_Formations.Add(new SquareFormation());
+                        m_Formations.Add(new SquareFormation(unitAmount));
                         break;
                     case FormationType.COLUMN:
-                        m_Formations.Add(new ColumnFormation());
+                        m_Formations.Add(new ColumnFormation(unitAmount));
                         break;
                     case FormationType.INVERTEDWEDGE:
-                        m_Formations.Add(new InvertedWedgeFormation());
+                        m_Formations.Add(new InvertedWedgeFormation(unitAmount));
                         break;
                     default:
                         Debug.LogError("Formation requested for " + gameObject.name + " is not implemented! ");
@@ -149,6 +160,9 @@ public class VirtualLeader : MonoBehaviour
         //    }
         //}
     }
+
+
+
 
 
     public bool DeregisterUnitFromSquad(SelectedComponent unit)

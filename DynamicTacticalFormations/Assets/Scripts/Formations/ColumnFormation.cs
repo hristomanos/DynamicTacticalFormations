@@ -6,17 +6,33 @@ using UnityEngine;
 
 public class ColumnFormation : Formation
 {
-    public ColumnFormation() : base(FormationType.COLUMN)
+
+    float verticalSpacing = 2;
+
+    
+
+    public ColumnFormation(int unitAmount) : base(unitAmount,FormationType.COLUMN)
     {
 
     }
 
     protected override void AssignPositions()
     {
-        m_UnitPositions.Add(new Vector3(0f, 0f, 0f));
-        m_UnitPositions.Add(new Vector3(0f, 0, -2f));
-        m_UnitPositions.Add(new Vector3(0f, 0, -4f));
-        m_UnitPositions.Add(new Vector3(0f, 0, -6f));
+        //m_UnitPositions.Add(new Vector3(0f, 0f, 0f));
+        //m_UnitPositions.Add(new Vector3(0f, 0, -2f));
+        //m_UnitPositions.Add(new Vector3(0f, 0, -4f));
+        //m_UnitPositions.Add(new Vector3(0f, 0, -6f));
+
+        float offset = (m_UnitAmount - 1) * verticalSpacing / 2f;
+
+        //For each unit in the formation
+        for (int index = 0; index < m_UnitAmount; index++)
+        {
+            //Add a new vector 3 on the list of positions
+            //Each unit is multiplied by the spacing minus the offset (I am not sure of the maths here)
+            m_UnitPositions.Add(new Vector3(0, 0, index * verticalSpacing - offset));
+        }
+
 
         CalculateCentreOfMass();
     }

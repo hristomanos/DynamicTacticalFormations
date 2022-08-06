@@ -9,13 +9,10 @@ public class LineFormation : Formation
 {
 
     float horizontalSpacing = 2;
-    float verticalSpacing;
-
-    int m_UnitAmount = 15;
-
-    public LineFormation() : base(FormationType.LINE)
+    
+    public LineFormation(int unitAmount) : base(unitAmount,FormationType.LINE)
     {
-        //m_UnitAmount = 15;
+       
        
     }
 
