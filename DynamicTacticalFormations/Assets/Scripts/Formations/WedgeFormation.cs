@@ -23,7 +23,7 @@ public class WedgeFormation : Formation
         //m_UnitPositions.Add(new Vector3(2.0f, 0.0f, -1.0f));
         //m_UnitPositions.Add(new Vector3(-4.0f, 0.0f, -2.0f));
 
-        Debug.Log("Inside wedge formation: " + m_UnitAmount);
+       // Debug.Log("Inside wedge formation: " + m_UnitAmount);
 
         m_UnitPositions = GetPositions(m_UnitAmount);
 

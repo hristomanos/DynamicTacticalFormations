@@ -45,15 +45,25 @@ public class VirtualLeader : MonoBehaviour
         m_Agent = GetComponent<NavMeshAgent>();
         m_Members = new List<SelectedComponent>();
 
-        m_CurrentFormationIndex = 0;
+        m_CurrentFormationIndex = 2;
 
         //Initilise formations list with formations
        SelectionController.Instance.onUnitSelectionComplete += CreateFormations;
+       SelectionController.Instance.onClearFormations += ClearFormations;
+
+        
     }
 
     private void OnDestroy()
     {
         SelectionController.Instance.onUnitSelectionComplete -= CreateFormations;
+        SelectionController.Instance.onClearFormations -= ClearFormations;
+    }
+
+    void ClearFormations()
+    {
+        m_Formations.Clear();
+        Debug.Log("Formations cleared! " + m_Formations.Count);
     }
 
 
@@ -80,7 +90,18 @@ public class VirtualLeader : MonoBehaviour
                 }
             }
         }
-        
+
+        if (m_Members.Count > 0)
+        {
+            UIManager.Instance.UpdateCurrentFormationUI(m_Formations[m_CurrentFormationIndex].Type);
+            UIManager.Instance.UpdateUnitsInFormation(m_Members.Count);
+        }
+        else
+        {
+            UIManager.Instance.UpdateCurrentFormationUI(FormationType.NULL);
+            UIManager.Instance.UpdateUnitsInFormation(0);
+        }
+
     }
         
     

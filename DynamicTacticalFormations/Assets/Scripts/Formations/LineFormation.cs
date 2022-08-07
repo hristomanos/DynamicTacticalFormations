@@ -34,7 +34,7 @@ public class LineFormation : Formation
             m_UnitPositions.Add(new Vector3(index * horizontalSpacing - offset, 0, 0));
         }
 
-        Debug.Log("LineFormation: " + m_UnitPositions.Count);
+        //Debug.Log("LineFormation: " + m_UnitPositions.Count);
 
         CalculateCentreOfMass();
     }

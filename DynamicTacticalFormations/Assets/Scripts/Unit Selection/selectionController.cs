@@ -75,7 +75,14 @@ public class SelectionController : MonoBehaviour
         }
     }
 
-   
+    public event Action onClearFormations;
+    public void ClearFormations()
+    {
+        if (onClearFormations != null)
+        {
+            onClearFormations();
+        }
+    }
 
     void Update()
     {
@@ -108,17 +115,12 @@ public class SelectionController : MonoBehaviour
                     if (Input.GetKey(KeyCode.LeftShift)) 
                     {
                         m_SelectedTable.AddSelected(m_Hit.transform.gameObject);
-
-                        //Invoke event
-                        //UnitSelectectionComplete(m_SelectedTable.g_SelectedTable.Count);
                     }
                     else //exclusive select - Select one unit
                     {
+                       // ClearFormations();
                         m_SelectedTable.DeselectAll();
                         m_SelectedTable.AddSelected(m_Hit.transform.gameObject);
-
-                        //Invoke event
-                       // UnitSelectectionComplete(m_SelectedTable.g_SelectedTable.Count);
                     }
                 }
                 else //if we didnt hit something
@@ -129,6 +131,7 @@ public class SelectionController : MonoBehaviour
                     }
                     else
                     {
+                       // ClearFormations();
                         m_SelectedTable.DeselectAll();
                     }
                 }
@@ -161,17 +164,18 @@ public class SelectionController : MonoBehaviour
                 m_SelectionBox.sharedMesh = m_SelectionMesh;
                 m_SelectionBox.convex = true;
                 m_SelectionBox.isTrigger = true;
-               
-                if (!Input.GetKey(KeyCode.LeftShift))
-                {
-                    m_SelectedTable.DeselectAll();
-                }
-
-                Destroy(m_SelectionBox, 1.02f);
 
                 StartCoroutine(CreateFormations());
 
+                if (!Input.GetKey(KeyCode.LeftShift))
+                {
+                    ClearFormations();
+                    m_SelectedTable.DeselectAll();
+                }
 
+                Destroy(m_SelectionBox, 0.02f);
+
+                
             }//end marquee select
 
             m_DragSelect = false;
@@ -244,7 +248,7 @@ public class SelectionController : MonoBehaviour
 
     IEnumerator CreateFormations()
     {
-        yield return null;
+        yield return new WaitForFixedUpdate();
         Debug.Log("Before UnitSelectionComplete: " + m_SelectedTable.g_SelectedTable.Count);
         UnitSelectectionComplete(m_SelectedTable.g_SelectedTable.Count);
     }

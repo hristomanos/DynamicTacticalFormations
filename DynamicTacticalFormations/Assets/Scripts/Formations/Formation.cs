@@ -62,7 +62,7 @@ public abstract class Formation
 
         if (unitIndex > m_UnitPositions.Count - 1)
         {
-            Debug.Log("Error: index: " + unitIndex + "Count: " + m_UnitPositions.Count);
+            Debug.Log("Error: index: " + unitIndex + "||  Count: " + m_UnitPositions.Count);
             Debug.LogError("ERROR: Index of unit position requested is too large!");
             Debug.Break();
             return unitPosition;
