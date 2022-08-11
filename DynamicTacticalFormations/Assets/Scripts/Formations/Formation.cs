@@ -2,7 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-//This abstract class is responsible for defining what types of information formations need to be created.
+//This abstract class is responsible for defining
+//what kind of data formations need to be created.
 
 public enum FormationType
 {

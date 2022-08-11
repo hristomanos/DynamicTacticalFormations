@@ -29,6 +29,9 @@ public class SelectedComponent : MonoBehaviour
 
     Vector3 m_FormationPos;
 
+    public bool m_PositionReached = false;
+
+
     void Start()
     {
         m_NavMeshAgent = GetComponent<NavMeshAgent>(); 
@@ -82,19 +85,30 @@ public class SelectedComponent : MonoBehaviour
 
             //Get next position
             m_FormationPos = m_MyVirtualLeader.GetMemberPosition(this,out m_TargetPos);
-
+                        
             //If you reach the target position and stop look at the same direction as the leader. All soldiers look at the same direction.
             //This solution is a bit snappy but does the job.
             if (Vector3.Distance(m_TargetPos, transform.position) <= m_NavMeshAgent.stoppingDistance)
             {
                 CopyRotationFrom(m_MyVirtualLeader.gameObject);
+                m_PositionReached = true;
             }
+            else
+                m_PositionReached = false;
 
             //Go to the target position
             m_NavMeshAgent.SetDestination(m_TargetPos);
             
         }
     }
+
+
+    private void OnDrawGizmos()
+    {
+        Gizmos.color = Color.red;
+        Gizmos.DrawSphere(m_FormationPos, 0.1f);
+    }
+
 
     public void CopyRotationFrom(GameObject Target)
     {

@@ -27,6 +27,12 @@ public class CameraController : MonoBehaviour
     public Vector3 m_DragStartPos;
     public Vector3 m_DragCurrentPos;
 
+    public float minY;
+    public float maxY;
+    public float minZ;
+    public float maxZ;
+
+
     // Start is called before the first frame update
     void Start()
     {
@@ -49,6 +55,9 @@ public class CameraController : MonoBehaviour
         if (Input.mouseScrollDelta.y != 0)
         {
             m_NewZoom += Input.mouseScrollDelta.y * m_ZoomAmount;
+
+            m_NewZoom.y = Mathf.Clamp(m_NewZoom.y, minY, maxY);
+            m_NewZoom.z = Mathf.Clamp(m_NewZoom.z, minZ, maxZ);
         }
 
         //if (Input.GetMouseButtonDown(0))

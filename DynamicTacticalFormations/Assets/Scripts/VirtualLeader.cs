@@ -2,29 +2,50 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
+using System.Linq;
 
-//This script is responsible for calculating the positions for each unit in the formation
+//This script is responsible for handling formations and the squad.
+//It can:
+//      * Register a unit to the squad
+//      * Create formations
+//      * Select a formation from input
+//      * Calculate relative positions in the chosen formation for each member of the squad every frame.
+//      * Switch formations depending on how narrow a path is
+
+public enum FormationState
+{
+    NULL,
+    BROKEN, // The formation is not formed and is not trying to form
+    FORMING, // The formation is trying to form up but has not yet reached FORMED
+    FORMED //All units have reached their desired positions
+}
+
 
 public class VirtualLeader : MonoBehaviour
 {
-    //Need to know about what a formation is
+    //A list of generated formations based on how big the squad is
     List<Formation> m_Formations;
 
-    //Need to know about what types of formations we got
-   public FormationType[] m_FormationTypes;
-    
-    //Need to generate paths and move along with the squad
-    NavMeshAgent m_Agent;
+    //An array of formation types to ensure that all types have been generated at least once
+    public FormationType[] m_FormationTypes;
 
-    //Need to know about squad members
-    List<SelectedComponent> m_Members;
-
-    //Need to know what is the max number of members
-    uint m_MaxMemberCapacity;
-
+    //An index used to hold the current employed formation
     int m_CurrentFormationIndex;
 
-    //TEST
+    FormationState m_FormationState;
+    
+    //A nav mesh agent component to enable movement within the environment
+    NavMeshAgent m_Agent;
+
+    //A list of selected units to generate the squad
+    List<SelectedComponent> m_Members;
+
+    //A layermask used for ignoring squad units when casting rays to check for narrow paths
+    [SerializeField] LayerMask m_UnitLayermask;
+
+    bool m_CanMove;
+
+    //Number input
     KeyCode[] keyCodes = {
             KeyCode.Alpha0,
             KeyCode.Alpha1,
@@ -38,43 +59,53 @@ public class VirtualLeader : MonoBehaviour
             KeyCode.Alpha9
     };
 
-    // Start is called before the first frame update
+
+    //Speed moderation
+    float m_OriginalSpeed;
+    float m_SpeedModifier;
+    float m_MaxDrift = 1.0f;
+    Vector3 centerOfMass = Vector3.zero;
+
+
     void Start()
     {
         m_Formations = new List<Formation>();
         m_Agent = GetComponent<NavMeshAgent>();
         m_Members = new List<SelectedComponent>();
 
-        m_CurrentFormationIndex = 2;
+        m_CurrentFormationIndex = 0;
 
-        //Initilise formations list with formations
-       SelectionController.Instance.onUnitSelectionComplete += CreateFormations;
-       SelectionController.Instance.onClearFormations += ClearFormations;
+        m_CanMove = false;
 
-        
+        m_SpeedModifier = 1.0f;
+        m_OriginalSpeed = m_Agent.speed;
+
+        m_FormationState = FormationState.FORMING;
+
+        //Subscribe create and clear formations to the event. Invoke event after a squad has been selected or deselected.
+        SelectionController.Instance.onUnitSelectionComplete += CreateFormations;
+        SelectionController.Instance.onClearFormations += ClearFormations;
+
     }
+
 
     private void OnDestroy()
     {
+        //Unscubscribe functions from the event if gameobject gets destroyed
         SelectionController.Instance.onUnitSelectionComplete -= CreateFormations;
         SelectionController.Instance.onClearFormations -= ClearFormations;
-    }
-
-    void ClearFormations()
-    {
-        m_Formations.Clear();
-        Debug.Log("Formations cleared! " + m_Formations.Count);
     }
 
 
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetMouseButtonDown(1))
+        if (Input.GetMouseButtonDown(1) && m_CanMove)
         {
             m_Agent.SetDestination(GetMouseWorldPosition());
         }
 
+        //Get number from keyboard and switch formation
         for (int i = 0; i < keyCodes.Length; i++)
         {
             if (Input.GetKey(keyCodes[i]))
@@ -91,31 +122,75 @@ public class VirtualLeader : MonoBehaviour
             }
         }
 
+        
+
         if (m_Members.Count > 0)
         {
+            //Update UI
             UIManager.Instance.UpdateCurrentFormationUI(m_Formations[m_CurrentFormationIndex].Type);
             UIManager.Instance.UpdateUnitsInFormation(m_Members.Count);
+            UIManager.Instance.UpdateCurrentFormationState(m_FormationState);
+
+            //TODO: Need to change state from FORMED TO BROKEN TO FORMING
+
+            
+            if (m_FormationState == FormationState.BROKEN)
+            {
+                m_FormationState = FormationState.FORMING;
+            }
+
+            //CheckSpeed();
+
+          //  Debug.Log("State: " + m_FormationState);
+            //Debug.Log("can Move: " + m_CanMove);
+            switch (m_FormationState)
+            {
+                case FormationState.FORMING: //Trying to form up but has not yet reached
+                    Debug.Log("Forming!");
+                    FormUp();
+                    break;
+                case FormationState.FORMED:
+                   
+                    break;
+                default:
+                    break;
+            }
         }
         else
         {
+            m_CanMove = false;
+            m_FormationState = FormationState.BROKEN;
             UIManager.Instance.UpdateCurrentFormationUI(FormationType.NULL);
             UIManager.Instance.UpdateUnitsInFormation(0);
+            UIManager.Instance.UpdateCurrentFormationState(FormationState.NULL);
         }
 
-    }
-        
-    
 
-    
-    public bool RegisterUnitToSquad(SelectedComponent unit)
-    {
-        //We reached maximum squad capacity
-        //if (m_Members.Count == m_MaxMemberCapacity)
+        //if (Input.GetKeyDown(KeyCode.Z))
         //{
-        //    Debug.LogWarning("WARNING: Squad has reached max capacity!");
-        //    return false;
+        //    m_CanMove = false;
+        //    m_Agent.transform.LookAt(m_Agent.destination);
+        //    m_Agent.isStopped = true;
         //}
 
+        //if (Input.GetKeyDown(KeyCode.X))
+        //{
+        //    m_CanMove = true;
+        //    m_Agent.transform.LookAt(m_Agent.destination);
+        //    m_Agent.isStopped = false;
+        //}
+
+        
+    }
+
+    private void FixedUpdate()
+    {
+        CheckSides(); 
+    }
+
+    //Add unit to squad by checking its instance id first
+    public bool RegisterUnitToSquad(SelectedComponent unit)
+    {
         //Make sure no units are added twice!
         if (!m_Members.Exists(u => u.GetInstanceID() == unit.GetInstanceID()))
         {
@@ -130,6 +205,30 @@ public class VirtualLeader : MonoBehaviour
 
         
     }
+
+    //Remove unit from squad
+    public bool DeregisterUnitFromSquad(SelectedComponent unit)
+    {
+        //We reached maximum squad capacity
+        if (m_Members.Count <= 0)
+        {
+            Debug.LogWarning("WARNING: Squad is already empty!");
+            return false;
+        }
+
+        //Make sure no units are added twice!
+        if (m_Members.Exists(u => u.GetInstanceID() == unit.GetInstanceID()))
+        {
+            m_Members.Remove(unit);
+            return true;
+        }
+        else
+        {
+            Debug.LogWarning("WARNING: " + unit.name + " is not in the squad!");
+            return false;
+        }
+    }
+
 
     //Populate list of formations by checking that all formation are in the list once
     //And storing the maximum number of units for each formation
@@ -170,45 +269,15 @@ public class VirtualLeader : MonoBehaviour
             }
         }
 
-        //Get Maximum number of members in a formation
-        //m_MaxMemberCapacity = m_Formations[0].MaxUnits;
-
-        //foreach (Formation formation in m_Formations)
-        //{
-        //    if (formation.MaxUnits < m_MaxMemberCapacity)
-        //    {
-        //        m_MaxMemberCapacity = formation.MaxUnits;
-        //    }
-        //}
     }
 
-
-
-
-
-    public bool DeregisterUnitFromSquad(SelectedComponent unit)
+    void ClearFormations()
     {
-        //We reached maximum squad capacity
-        if (m_Members.Count <= 0)
-        {
-            Debug.LogWarning("WARNING: Squad is already empty!");
-            return false;
-        }
-
-        //Make sure no units are added twice!
-        if (m_Members.Exists(u => u.GetInstanceID() == unit.GetInstanceID()))
-        {
-            m_Members.Remove(unit);
-            return true;
-        }
-        else
-        {
-            Debug.LogWarning("WARNING: " + unit.name + " is not in the squad!");
-            return false;
-        }
+        m_Formations.Clear();
+        Debug.Log("Formations cleared! " + m_Formations.Count);
     }
 
-    //Gets relative position in the formation for each squad unit each frame.
+    //Gets relative position in the formation for each squad unit at each frame.
     public Vector3 GetMemberPosition(SelectedComponent member, out Vector3 targetPos)
     {
         Vector3 unitPos = Vector3.zero;
@@ -221,7 +290,7 @@ public class VirtualLeader : MonoBehaviour
 
         
 
-        //if unit is a member then get formation position
+        //if passed unit is a member then get formation position
         if (unitIndex >= 0)
         {
             //get unit's position in the formation relative to the origin
@@ -247,6 +316,7 @@ public class VirtualLeader : MonoBehaviour
         float maxDistance = m_Agent.speed * 0.5f;
 
         NavMeshHit prediction;
+
         //Look ahead a specified distance
         m_Agent.SamplePathPosition(1, maxDistance, out prediction);
 
@@ -279,5 +349,134 @@ public class VirtualLeader : MonoBehaviour
         }
     }
 
+    //Check if you are traversing a narrow path
+    void CheckSides()
+    {
+        RaycastHit rightHit;
+        RaycastHit leftHit;
+      
+        int maxDistance = 5;
+
+        bool rightSide = false;
+        bool leftSide = false;
+
+        //Right
+        if (Physics.Raycast(transform.position, transform.TransformDirection(Vector3.right), out rightHit, maxDistance, m_UnitLayermask))
+        {
+            Debug.DrawRay(transform.position, transform.TransformDirection(Vector3.right) * rightHit.distance, Color.yellow, m_UnitLayermask);
+            rightSide = true;
+        }
+        else
+        {
+            Debug.DrawRay(transform.position, transform.TransformDirection(Vector3.right) * maxDistance, Color.white, m_UnitLayermask);
+            rightSide = false;
+        }
+
+        //Left
+        if (Physics.Raycast(transform.position, transform.TransformDirection(-Vector3.right), out leftHit, maxDistance, m_UnitLayermask))
+        {
+            Debug.DrawRay(transform.position, transform.TransformDirection(-Vector3.right) * leftHit.distance, Color.yellow, m_UnitLayermask);
+            leftSide = true;
+           
+        }
+        else
+        {
+            Debug.DrawRay(transform.position, transform.TransformDirection(-Vector3.right) * maxDistance, Color.white, m_UnitLayermask);
+            leftSide = false;
+        }
+
+        if (leftSide && rightSide)
+        {
+            float averageDistance = leftHit.distance + rightHit.distance / 2;
+
+            if (averageDistance <= 2)
+            {
+                m_CurrentFormationIndex = 3; //Column
+            }
+            else if (averageDistance >= 2)
+            {
+                m_CurrentFormationIndex = 2; //Square
+            }
+        }
+
+
+    }
+
+    /// <summary>
+    /// Modifies the leader's speed to keep it from getting ahead of the formation
+    /// </summary>
+    /// 
+    private void CheckSpeed()
+    {
+        centerOfMass = Vector3.zero;
+        //calculate squad's center of mass
+        foreach (SelectedComponent member in m_Members)
+        {
+            centerOfMass += member.transform.position;
+        }
+        centerOfMass /= m_Members.Count;
+
+
+
+        float distFromCM = (centerOfMass - transform.position).sqrMagnitude - m_Formations[m_CurrentFormationIndex].ExpectedCentreOfMassSqrMagnitude; //distance from center of mass
+
+        m_SpeedModifier = (m_MaxDrift * m_MaxDrift - distFromCM) / (m_MaxDrift * m_MaxDrift);
+
+        m_Agent.speed = m_OriginalSpeed * m_SpeedModifier; //calculate new speed based on modifier
+        Debug.Log(m_Agent.speed + " " + m_SpeedModifier);
+      
+    }
+
+    private void OnDrawGizmos()
+    {
+        Gizmos.DrawCube(centerOfMass,new Vector3(0.5f,0.5f,0.5f));
+    }
+
+    public void FormUp()
+    {
+        ////Make sure no units are added twice!
+        //if (m_Members.Exists(u => u.GetInstanceID() == unit.GetInstanceID()))
+        //{
+        //    // unit.m_PositionReached;
+        //    //return true;
+        //}
+        //else
+        //{
+        //    Debug.LogWarning("WARNING: " + unit.name + " is not in the squad!");
+        //    //return false;
+        //}
+
+
+        //Debug.Log(m_Members.Any(c => c.m_PositionReached == true));
+
+        if (m_Members.Any(c => c.m_PositionReached == true))
+        {
+            m_CanMove = true;
+            Debug.Log("Formed!");
+            m_FormationState = FormationState.FORMED;
+            //Enable movement
+        }
+
+    }    
+
+    void Wheel()
+    {
+        /* TODO:
+             * Check that VL is turning
+             * Stop movement
+             * Rotate formation
+             * State: Forming
+             * Wait for all units
+             * Formed
+             * Enable movement
+             */
+
+        //Stop moving
+        m_Agent.isStopped = true;
+        m_Agent.transform.LookAt(m_Agent.destination);
+
+
+        
+    }
 
 }

@@ -9,7 +9,7 @@ public class UIManager : MonoBehaviour
 
     [SerializeField] TextMeshProUGUI m_NumberOfUnitsText;
     [SerializeField] TextMeshProUGUI m_CurrentFormationText;
-
+    [SerializeField] TextMeshProUGUI m_FormationStateText;
 
 
 
@@ -42,6 +42,11 @@ public class UIManager : MonoBehaviour
     public void UpdateCurrentFormationUI(FormationType type)
     {
         m_CurrentFormationText.text = "Current formation: " + type;
+    }
+
+    public void UpdateCurrentFormationState(FormationState state)
+    {
+        m_FormationStateText.text = "Formation State: " + state;
     }
 
 }

@@ -30,7 +30,7 @@ public class ColumnFormation : Formation
         {
             //Add a new vector 3 on the list of positions
             //Each unit is multiplied by the spacing minus the offset (I am not sure of the maths here)
-            m_UnitPositions.Add(new Vector3(0, 0, index * verticalSpacing - offset));
+            m_UnitPositions.Add(new Vector3(0, 0, index * -verticalSpacing));
         }
 
 
