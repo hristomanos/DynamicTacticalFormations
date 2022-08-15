@@ -63,7 +63,7 @@ public abstract class Formation
 
         if (unitIndex > m_UnitPositions.Count - 1)
         {
-            Debug.Log("Error: index: " + unitIndex + "||  Count: " + m_UnitPositions.Count);
+            Debug.Log("Error: index: " + unitIndex + " ||  Count: " + m_UnitPositions.Count);
             Debug.LogError("ERROR: Index of unit position requested is too large!");
             Debug.Break();
             return unitPosition;
@@ -72,6 +72,36 @@ public abstract class Formation
         return m_UnitPositions[unitIndex];
     }
 
+    virtual public List<float> GetLeftSide()
+    {
+        List<float> leftSide = new List<float>();
+        
+        foreach (Vector3 position in m_UnitPositions)
+        {
+            if (position.x < 0)
+            {
+                leftSide.Add(position.x);
+                Debug.Log(position.x);
+            }
+        }
+
+        return leftSide;
+    }
+
+    virtual public List<float> GetRightSide()
+    {
+        List<float> rightSide = new List<float>();
+
+        foreach (Vector3 position in m_UnitPositions)
+        {
+            if (position.x < 0)
+            {
+                rightSide.Add(position.x);
+            }
+        }
+
+        return rightSide;
+    }
 
     protected abstract void AssignPositions();
    

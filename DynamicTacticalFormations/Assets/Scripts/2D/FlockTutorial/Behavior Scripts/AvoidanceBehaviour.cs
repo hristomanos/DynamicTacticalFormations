@@ -7,7 +7,7 @@ public class AvoidanceBehaviour : FlockBehaviour
 {
     public override Vector2 CalculateMove(FlockAgent agent, List<Transform> context, Flock flock)
     {
-        //If there are neighbours then we do not need to make any adjustments
+        //If there are no neighbours then we do not need to make any adjustments
         if (context.Count == 0)
             return Vector2.zero;
 

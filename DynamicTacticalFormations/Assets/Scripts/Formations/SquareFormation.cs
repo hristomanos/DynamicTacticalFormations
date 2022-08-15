@@ -16,6 +16,10 @@ public class SquareFormation : Formation
     private float spacing = 2;
     private bool centerUnits = true;
 
+    float m_Noise = 0.3f;
+
+    bool hollow = false;
+
     public SquareFormation(int unitAmount) : base(unitAmount,FormationType.SQUARE)
     {
 
@@ -33,6 +37,7 @@ public class SquareFormation : Formation
         //Hold a list of positions
         m_UnitPositions = GetPositions(m_UnitAmount);
 
+       
 
         CalculateCentreOfMass();
     }
@@ -40,7 +45,7 @@ public class SquareFormation : Formation
     List<Vector3> GetPositions(int unitCount)
     {
         List<Vector3> unitPositions = new List<Vector3>();
-        var unitsPerRow = Mathf.Min(ColumnCount, unitCount);
+        int unitsPerRow = Mathf.Min(ColumnCount, unitCount);
         float offset = (unitsPerRow - 1) * spacing / 2f;
         float x, y, column;
 
@@ -48,7 +53,8 @@ public class SquareFormation : Formation
         {
             // Check if centering is enabled and if row has less than maximum
             // allowed units within the row.
-            var firstIndexInRow = row * ColumnCount;
+            //
+            int firstIndexInRow = row * ColumnCount;
             if (centerUnits &&
                 row != 0 &&
                 firstIndexInRow + ColumnCount > unitCount)
@@ -62,9 +68,17 @@ public class SquareFormation : Formation
             {
                 if (firstIndexInRow + column < unitCount)
                 {
+                    if (hollow && (row != 0 && row != unitsPerRow - 1) && column != 0 && column != ColumnCount - 1) 
+                    {
+                        continue;
+                    }
                     x = column * spacing - offset;
                     y = row * spacing;
-                    unitPositions.Add(new Vector3(x, 0, -y));
+
+                    Vector3 newPosition = new Vector3(x, 0, -y);
+                   // newPosition += GetNoise(newPosition);
+
+                    unitPositions.Add(newPosition);
                 }
                 else
                 {
@@ -89,5 +103,14 @@ public class SquareFormation : Formation
         }
 
         m_ExpectedCentreOfMass /= m_UnitPositions.Count;
+    }
+
+
+
+    Vector3 GetNoise(Vector3 pos)
+    {
+        var noise = Mathf.PerlinNoise(pos.x * m_Noise, pos.z * m_Noise);
+
+        return new Vector3(noise,0,noise);
     }
 }

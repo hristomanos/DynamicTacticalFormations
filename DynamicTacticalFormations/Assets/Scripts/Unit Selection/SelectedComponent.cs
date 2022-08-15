@@ -31,10 +31,20 @@ public class SelectedComponent : MonoBehaviour
 
     public bool m_PositionReached = false;
 
+    CapsuleCollider m_CapsuleCollider;
 
+    List<Transform> m_NeighboursTranform = new List<Transform>();
+
+    float m_MaxDrift = 1.0f;
+    float m_SpeedModifier;
+    float m_OriginalSpeed;
+    public float m_MaxSpeedModifier = 2.0f;
     void Start()
     {
-        m_NavMeshAgent = GetComponent<NavMeshAgent>(); 
+        m_NavMeshAgent = GetComponent<NavMeshAgent>();
+
+
+        m_OriginalSpeed = m_NavMeshAgent.speed;
 
         //Because the script is added to the selected object, I couldn't find a way to reference the indicator child game object.
         m_UnitSelectedIndicator = transform.Find("UnitSelectedIndicator").gameObject;
@@ -46,6 +56,8 @@ public class SelectedComponent : MonoBehaviour
         m_MyVirtualLeader = FindObjectOfType<VirtualLeader>();
 
         m_FormationPos = Vector3.zero;
+
+        m_CapsuleCollider = GetComponent<CapsuleCollider>();
 
         //If virtual leader was not found
         if (m_MyVirtualLeader == null)
@@ -61,6 +73,11 @@ public class SelectedComponent : MonoBehaviour
 
         StartCoroutine(UpdateTargetPosition());
         
+    }
+
+    private void Update()
+    {
+        CheckSpeed();
     }
 
     private void OnDestroy()
@@ -85,10 +102,10 @@ public class SelectedComponent : MonoBehaviour
 
             //Get next position
             m_FormationPos = m_MyVirtualLeader.GetMemberPosition(this,out m_TargetPos);
-                        
+
             //If you reach the target position and stop look at the same direction as the leader. All soldiers look at the same direction.
             //This solution is a bit snappy but does the job.
-            if (Vector3.Distance(m_TargetPos, transform.position) <= m_NavMeshAgent.stoppingDistance)
+            if (Vector3.Distance(m_FormationPos, transform.position) <= m_NavMeshAgent.stoppingDistance)
             {
                 CopyRotationFrom(m_MyVirtualLeader.gameObject);
                 m_PositionReached = true;
@@ -96,8 +113,10 @@ public class SelectedComponent : MonoBehaviour
             else
                 m_PositionReached = false;
 
+
             //Go to the target position
-            m_NavMeshAgent.SetDestination(m_TargetPos);
+            //m_NavMeshAgent.SetDestination(m_TargetPos);
+            m_NavMeshAgent.SetDestination(m_FormationPos);
             
         }
     }
@@ -113,6 +132,82 @@ public class SelectedComponent : MonoBehaviour
     public void CopyRotationFrom(GameObject Target)
     {
         transform.rotation = Target.transform.localRotation;
+    }
+
+
+    List<Transform> GetNearbyObjects()
+    {
+        List<Transform> context = new List<Transform>();
+        Collider[] contextColliders = Physics.OverlapSphere(transform.position, 1);
+
+
+        //Foreach collider in this array, as long it is not ourselves
+        //Then take the transform and add it to the list
+        foreach (Collider c in contextColliders)
+        {
+            if (c != m_CapsuleCollider)
+            {
+                context.Add(c.transform);
+            }
+        }
+
+
+        return context;
+    }
+
+    private void CheckSpeed()
+    {
+        float distToFormationPosZ = transform.InverseTransformPoint(m_FormationPos).z;
+        float distToFormationPosX = transform.InverseTransformPoint(m_FormationPos).x;
+
+        if (distToFormationPosZ > 0 && distToFormationPosZ > m_MaxDrift)
+        {
+            m_SpeedModifier = distToFormationPosZ / m_MaxDrift;
+        }
+        else if (distToFormationPosZ < 0 && Mathf.Abs(distToFormationPosZ) > m_MaxDrift && m_NavMeshAgent.remainingDistance < m_MaxDrift * 4.0f)
+        {
+            m_SpeedModifier = m_MaxDrift / Mathf.Abs(distToFormationPosZ);
+        }
+        else
+            m_SpeedModifier = 1.0f;
+
+        if (distToFormationPosX > m_MaxDrift)
+            m_SpeedModifier = 1.0f;
+
+        if (m_SpeedModifier > m_MaxSpeedModifier)
+            m_SpeedModifier = m_MaxSpeedModifier;
+
+        m_NavMeshAgent.speed = m_OriginalSpeed * m_SpeedModifier;
+    }
+
+    public Vector3 AvoidNeighbours()
+    {
+        //If there are no neighbours then we do not need to make any adjustments
+        if (m_NeighboursTranform.Count == 0)
+            return Vector2.zero;
+
+        //Add all points and average
+        Vector2 avoidanceMove = Vector2.zero;
+
+        //How many are specifically within the avoidance radius
+        //Number of things to avoid
+        int nAvoid = 0;
+        foreach (Transform neighbour in m_NeighboursTranform)
+        {
+            if (Vector2.SqrMagnitude(neighbour.position - transform.position) < 2)//flock.SquareAvoidanceRadius)
+            {
+                nAvoid++;
+                //Gives us the offset
+                avoidanceMove += (Vector2)(transform.position - neighbour.position);
+            }
+        }
+
+        if (nAvoid > 0)
+        {
+            avoidanceMove /= nAvoid;
+        }
+
+        return avoidanceMove;
     }
 
 }

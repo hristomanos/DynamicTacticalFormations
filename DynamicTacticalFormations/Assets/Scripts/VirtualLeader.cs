@@ -15,9 +15,9 @@ using System.Linq;
 public enum FormationState
 {
     NULL,
-    BROKEN, // The formation is not formed and is not trying to form
-    FORMING, // The formation is trying to form up but has not yet reached FORMED
-    FORMED //All units have reached their desired positions
+    BROKEN,  //The formation is not formed and is not trying to form
+    FORMING, //The formation is trying to form up but has not yet reached FORMED
+    FORMED   //All units have reached their desired positions
 }
 
 
@@ -37,13 +37,19 @@ public class VirtualLeader : MonoBehaviour
     //A nav mesh agent component to enable movement within the environment
     NavMeshAgent m_Agent;
 
+    Vector3 m_Destination;
+
     //A list of selected units to generate the squad
-    List<SelectedComponent> m_Members;
+    List <SelectedComponent> m_Members;
 
     //A layermask used for ignoring squad units when casting rays to check for narrow paths
     [SerializeField] LayerMask m_UnitLayermask;
 
     bool m_CanMove;
+
+
+    //Show path with a line renderer
+    LineRenderer m_LineRenderer;
 
     //Number input
     KeyCode[] keyCodes = {
@@ -63,7 +69,7 @@ public class VirtualLeader : MonoBehaviour
     //Speed moderation
     float m_OriginalSpeed;
     float m_SpeedModifier;
-    float m_MaxDrift = 1.0f;
+    float m_MaxDrift = 8.0f;
     Vector3 centerOfMass = Vector3.zero;
 
 
@@ -72,14 +78,15 @@ public class VirtualLeader : MonoBehaviour
         m_Formations = new List<Formation>();
         m_Agent = GetComponent<NavMeshAgent>();
         m_Members = new List<SelectedComponent>();
+        m_LineRenderer = GetComponent<LineRenderer>();
 
-        m_CurrentFormationIndex = 0;
+        m_CurrentFormationIndex = 2;
 
         m_CanMove = false;
 
         m_SpeedModifier = 1.0f;
         m_OriginalSpeed = m_Agent.speed;
-
+      
         m_FormationState = FormationState.FORMING;
 
         //Subscribe create and clear formations to the event. Invoke event after a squad has been selected or deselected.
@@ -95,15 +102,18 @@ public class VirtualLeader : MonoBehaviour
         SelectionController.Instance.onUnitSelectionComplete -= CreateFormations;
         SelectionController.Instance.onClearFormations -= ClearFormations;
     }
-
-
+    
     // Update is called once per frame
     void Update()
     {
         if (Input.GetMouseButtonDown(1) && m_CanMove)
         {
-            m_Agent.SetDestination(GetMouseWorldPosition());
+            m_Destination = GetMouseWorldPosition();
+            m_Agent.SetDestination(m_Destination);
         }
+
+        
+
 
         //Get number from keyboard and switch formation
         for (int i = 0; i < keyCodes.Length; i++)
@@ -139,18 +149,18 @@ public class VirtualLeader : MonoBehaviour
                 m_FormationState = FormationState.FORMING;
             }
 
-            //CheckSpeed();
+           // CheckSpeed(m_Agent);
 
           //  Debug.Log("State: " + m_FormationState);
             //Debug.Log("can Move: " + m_CanMove);
             switch (m_FormationState)
             {
                 case FormationState.FORMING: //Trying to form up but has not yet reached
-                    Debug.Log("Forming!");
+                    //Debug.Log("Forming!");
                     FormUp();
                     break;
                 case FormationState.FORMED:
-                   
+                   //StayTogether()
                     break;
                 default:
                     break;
@@ -164,23 +174,7 @@ public class VirtualLeader : MonoBehaviour
             UIManager.Instance.UpdateUnitsInFormation(0);
             UIManager.Instance.UpdateCurrentFormationState(FormationState.NULL);
         }
-
-
-        //if (Input.GetKeyDown(KeyCode.Z))
-        //{
-        //    m_CanMove = false;
-        //    m_Agent.transform.LookAt(m_Agent.destination);
-        //    m_Agent.isStopped = true;
-        //}
-
-        //if (Input.GetKeyDown(KeyCode.X))
-        //{
-        //    m_CanMove = true;
-        //    m_Agent.transform.LookAt(m_Agent.destination);
-        //    m_Agent.isStopped = false;
-        //}
-
-        
+       
     }
 
     private void FixedUpdate()
@@ -321,7 +315,7 @@ public class VirtualLeader : MonoBehaviour
         m_Agent.SamplePathPosition(1, maxDistance, out prediction);
 
         //Calculate a new target position by adding the predicted position in the VL's local space to the unit's position within the formation.
-        //Add respective formation position to next predicted step to 
+        //Add respective formation position to next predicted step
         targetPos = transform.TransformPoint(transform.InverseTransformPoint(prediction.position) + respectiveUnitPos);
 
        // Debug.Log("Remaining : " + m_Agent.remainingDistance);
@@ -363,25 +357,25 @@ public class VirtualLeader : MonoBehaviour
         //Right
         if (Physics.Raycast(transform.position, transform.TransformDirection(Vector3.right), out rightHit, maxDistance, m_UnitLayermask))
         {
-            Debug.DrawRay(transform.position, transform.TransformDirection(Vector3.right) * rightHit.distance, Color.yellow, m_UnitLayermask);
+           // Debug.DrawRay(transform.position, transform.TransformDirection(Vector3.right) * rightHit.distance, Color.yellow, m_UnitLayermask);
             rightSide = true;
         }
         else
         {
-            Debug.DrawRay(transform.position, transform.TransformDirection(Vector3.right) * maxDistance, Color.white, m_UnitLayermask);
+           // Debug.DrawRay(transform.position, transform.TransformDirection(Vector3.right) * maxDistance, Color.white, m_UnitLayermask);
             rightSide = false;
         }
 
         //Left
         if (Physics.Raycast(transform.position, transform.TransformDirection(-Vector3.right), out leftHit, maxDistance, m_UnitLayermask))
         {
-            Debug.DrawRay(transform.position, transform.TransformDirection(-Vector3.right) * leftHit.distance, Color.yellow, m_UnitLayermask);
+           // Debug.DrawRay(transform.position, transform.TransformDirection(-Vector3.right) * leftHit.distance, Color.yellow, m_UnitLayermask);
             leftSide = true;
            
         }
         else
         {
-            Debug.DrawRay(transform.position, transform.TransformDirection(-Vector3.right) * maxDistance, Color.white, m_UnitLayermask);
+           // Debug.DrawRay(transform.position, transform.TransformDirection(-Vector3.right) * maxDistance, Color.white, m_UnitLayermask);
             leftSide = false;
         }
 
@@ -398,17 +392,16 @@ public class VirtualLeader : MonoBehaviour
                 m_CurrentFormationIndex = 2; //Square
             }
         }
-
-
     }
 
     /// <summary>
     /// Modifies the leader's speed to keep it from getting ahead of the formation
     /// </summary>
     /// 
-    private void CheckSpeed()
+    public void CheckSpeed(NavMeshAgent agent)
     {
         centerOfMass = Vector3.zero;
+
         //calculate squad's center of mass
         foreach (SelectedComponent member in m_Members)
         {
@@ -422,46 +415,47 @@ public class VirtualLeader : MonoBehaviour
 
         m_SpeedModifier = (m_MaxDrift * m_MaxDrift - distFromCM) / (m_MaxDrift * m_MaxDrift);
 
-        m_Agent.speed = m_OriginalSpeed * m_SpeedModifier; //calculate new speed based on modifier
-        Debug.Log(m_Agent.speed + " " + m_SpeedModifier);
+        agent.speed = m_OriginalSpeed * m_SpeedModifier; //calculate new speed based on modifier
+       // Debug.Log(agent.speed + " " + m_SpeedModifier);
       
     }
 
     private void OnDrawGizmos()
     {
-        Gizmos.DrawCube(centerOfMass,new Vector3(0.5f,0.5f,0.5f));
+        //Allocated positions
+        Gizmos.DrawWireSphere(m_Destination, 0.5f);
+       // Gizmos.DrawCube(centerOfMass,new Vector3(1f,1f,1f));
     }
 
     public void FormUp()
     {
-        ////Make sure no units are added twice!
-        //if (m_Members.Exists(u => u.GetInstanceID() == unit.GetInstanceID()))
-        //{
-        //    // unit.m_PositionReached;
-        //    //return true;
-        //}
-        //else
-        //{
-        //    Debug.LogWarning("WARNING: " + unit.name + " is not in the squad!");
-        //    //return false;
-        //}
-
-
-        //Debug.Log(m_Members.Any(c => c.m_PositionReached == true));
-
         if (m_Members.Any(c => c.m_PositionReached == true))
         {
             m_CanMove = true;
             Debug.Log("Formed!");
             m_FormationState = FormationState.FORMED;
-            //Enable movement
         }
-
     }    
 
+
+    void RenderLine(int positionCount, Vector3[] positions)
+    {
+        if (m_Agent.hasPath)
+        {
+            m_LineRenderer.positionCount = positionCount;
+            m_LineRenderer.SetPositions(positions);
+            m_LineRenderer.enabled = true;
+        }
+        else
+        {
+            m_LineRenderer.enabled = false;
+        }
+    }
+
+    //Tested approach - Not working properly. Work in progress.
     void Wheel()
     {
-        /* TODO:
+        /* Aprroach from Age of empires article
              * Check that VL is turning
              * Stop movement
              * Rotate formation
@@ -471,12 +465,35 @@ public class VirtualLeader : MonoBehaviour
              * Enable movement
              */
 
-        //Stop moving
-        m_Agent.isStopped = true;
-        m_Agent.transform.LookAt(m_Agent.destination);
+        int index = 1;
+        float radius = 1;
+        Vector3[] pathCorners = new Vector3[0];
 
+        if (NavMesh.CalculatePath(transform.position, m_Destination, NavMesh.AllAreas, m_Agent.path) && m_Agent.path.corners.Length > 1)
+        {
+            pathCorners = m_Agent.path.corners;
+            for (int i = 1; i < pathCorners.Length - 2; i++)
+            {
+                NavMeshHit hit;
+                bool result = NavMesh.FindClosestEdge(pathCorners[i], out hit, NavMesh.AllAreas);
+                if (result && hit.distance < radius)
+                    pathCorners[i] = hit.position + hit.normal * radius;
+            }
+        }
 
-        
+        if (index <= pathCorners.Length - 1)
+        {
+
+            m_Agent.SetDestination(pathCorners[index]);
+
+            if (Vector3.Distance(pathCorners[index], transform.position) <= m_Agent.stoppingDistance)
+            {
+                ++index;
+            }
+        }
+
+        RenderLine(pathCorners.Length, pathCorners);
+
     }
 
 }

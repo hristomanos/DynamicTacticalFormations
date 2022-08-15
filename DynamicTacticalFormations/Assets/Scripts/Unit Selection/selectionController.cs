@@ -131,8 +131,8 @@ public class SelectionController : MonoBehaviour
                     }
                     else
                     {
-                       // ClearFormations();
                         m_SelectedTable.DeselectAll();
+                      //  ClearFormations();
                     }
                 }
             }
