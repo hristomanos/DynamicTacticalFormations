@@ -118,7 +118,7 @@ public class SelectionController : MonoBehaviour
                     }
                     else //exclusive select - Select one unit
                     {
-                       // ClearFormations();
+                        StartCoroutine(CreateFormations());
                         m_SelectedTable.DeselectAll();
                         m_SelectedTable.AddSelected(m_Hit.transform.gameObject);
                     }
@@ -132,7 +132,6 @@ public class SelectionController : MonoBehaviour
                     else
                     {
                         m_SelectedTable.DeselectAll();
-                      //  ClearFormations();
                     }
                 }
             }

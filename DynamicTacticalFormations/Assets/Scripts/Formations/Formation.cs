@@ -18,16 +18,12 @@ public enum FormationType
 
 public abstract class Formation
 {
-    //Need to know about the formation type
     FormationType m_Type;
 
-    //Need to know about the positions units will occupy
+    //Positions units will occupy in the formation
     protected List<Vector3> m_UnitPositions;
 
-    //Need to know the maximum number of unit in the formation
-    //protected uint m_MaxUnits;
-
-    //Need to know about the centre of the squad's mass
+    //Centre of the squad's mass
     protected Vector3 m_ExpectedCentreOfMass;
 
     //Accessors   
@@ -35,8 +31,6 @@ public abstract class Formation
     public FormationType Type { get => m_Type; }
 
     public List<Vector3> UnitPositions { get => m_UnitPositions; }
-    
-   // public uint MaxUnits { get => m_MaxUnits; }
 
     public Vector3 ExpectedCentreOfMass { get => m_ExpectedCentreOfMass; }
     
@@ -94,7 +88,7 @@ public abstract class Formation
 
         foreach (Vector3 position in m_UnitPositions)
         {
-            if (position.x < 0)
+            if (position.x > 0)
             {
                 rightSide.Add(position.x);
             }

@@ -2,23 +2,20 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-//This script is responsible for assigning positions for a wedge formation. It also calculates the group's centre of mass
+//This script is responsible for assigning positions for a square formation.
+//It also calculates the group's centre of mass
 
 public class SquareFormation : Formation
 {
 
-    /// <summary>
-    /// Returns the column count which represents the max
-    /// unit number in a single row.
-    /// </summary>
+    // Represents the max number of units in a single row.
     public int ColumnCount { get; private set; }
 
-    private float spacing = 2;
-    private bool centerUnits = true;
-
+    float m_Spacing = 2;
     float m_Noise = 0.3f;
 
-    bool hollow = false;
+    bool m_CentreUnits = true;
+    bool m_Hollow = false;
 
     public SquareFormation(int unitAmount) : base(unitAmount,FormationType.SQUARE)
     {
@@ -27,6 +24,7 @@ public class SquareFormation : Formation
 
     protected override void AssignPositions()
     {
+        //Hard coded representation
         //m_UnitPositions.Add(new Vector3(0.0f, 0.0f, 0.0f));
         //m_UnitPositions.Add(new Vector3(2.0f, 0.0f, 0.0f));
         //m_UnitPositions.Add(new Vector3(0.0f, 0.0f, -2.0f));
@@ -44,39 +42,47 @@ public class SquareFormation : Formation
 
     List<Vector3> GetPositions(int unitCount)
     {
+        //Declare a list of 3D vectors
         List<Vector3> unitPositions = new List<Vector3>();
+
+        //If the number of units is less than the column count.
         int unitsPerRow = Mathf.Min(ColumnCount, unitCount);
-        float offset = (unitsPerRow - 1) * spacing / 2f;
-        float x, y, column;
+        
+        //Calculate offset to have an even distribution across the X axis
+        float offset = (unitsPerRow - 1) * m_Spacing / 2f;
+
+        float x, z, column;
 
         for (int row = 0; unitPositions.Count < unitCount; row++)
         {
-            // Check if centering is enabled and if row has less than maximum
-            // allowed units within the row.
-            //
+            
+            //Take the first index in row by multiplying the current index by the column count
             int firstIndexInRow = row * ColumnCount;
-            if (centerUnits &&
-                row != 0 &&
-                firstIndexInRow + ColumnCount > unitCount)
+            
+            //Check if the total amount of available slots is larger than the amount of units
+            int totalAmountOfSlots = firstIndexInRow + ColumnCount;
+            if (m_CentreUnits && row != 0 && totalAmountOfSlots > unitCount)
             {
                 // Alter the offset to center the units that do not fill the row
-                var emptySlots = firstIndexInRow + ColumnCount - unitCount;
-                offset -= emptySlots / 2f * spacing;
+                int emptySlots = totalAmountOfSlots - unitCount;
+
+                offset -= emptySlots / 2f * m_Spacing;
             }
 
             for (column = 0; column < ColumnCount; column++)
             {
                 if (firstIndexInRow + column < unitCount)
                 {
-                    if (hollow && (row != 0 && row != unitsPerRow - 1) && column != 0 && column != ColumnCount - 1) 
+                    if (m_Hollow && (row != 0 && row != unitsPerRow - 1) && column != 0 && column != ColumnCount - 1) 
                     {
                         continue;
                     }
-                    x = column * spacing - offset;
-                    y = row * spacing;
+                    x = column * m_Spacing - offset;
+                    z = row * m_Spacing;
 
-                    Vector3 newPosition = new Vector3(x, 0, -y);
-                   // newPosition += GetNoise(newPosition);
+                    Vector3 newPosition = new Vector3(x, 0, -z);
+
+                    //newPosition += GetNoise(newPosition);
 
                     unitPositions.Add(newPosition);
                 }

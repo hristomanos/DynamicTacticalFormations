@@ -6,8 +6,8 @@ using UnityEngine;
 
 public class WedgeFormation : Formation
 {
-    private float spacing = 2;
-    private bool centerUnits = false;
+    private float m_Spacing = 2;
+    private bool m_CenterUnits = true;
 
     
 
@@ -39,34 +39,37 @@ public class WedgeFormation : Formation
         float currentRowOffset = 0f;
         float x, z;
 
+        //For each unit in the formation
         for (int row = 0; unitPositions.Count < unitCount; row++)
         {
             // Current unit positions are the index of first unit in row
-            var columnsInRow = row + 1;
-            var firstIndexInRow = unitPositions.Count;
+            int columnsInRow = row + 1;
+            int firstIndexInRow = unitPositions.Count;
 
             for (int column = 0; column < columnsInRow; column++)
             {
-                x = column * spacing + currentRowOffset;
-                z = row * spacing;
+                x = column * m_Spacing + currentRowOffset;
+                z = row * m_Spacing;
 
                 // Check if centering is enabled and if row has less than maximum
                 // allowed units within the row.
-                if (centerUnits &&
+                if (m_CenterUnits &&
                     row != 0 &&
                     firstIndexInRow + columnsInRow > unitCount)
                 {
                     // Alter the offset to center the units that do not fill the row
-                    var emptySlots = firstIndexInRow + columnsInRow - unitCount;
-                    x += emptySlots / 2f * spacing;
+                    int emptySlots = firstIndexInRow + columnsInRow - unitCount;
+                    x += emptySlots / 2f * m_Spacing;
                 }
 
                 unitPositions.Add(new Vector3(x, 0, -z));
 
+                //If the positions exceed the number of units stop
                 if (unitPositions.Count >= unitCount) break;
             }
 
-            currentRowOffset -= spacing / 2;
+            //Make them come closer by half since there is an extra unit at each row
+            currentRowOffset -= m_Spacing / 2;
         }
 
         return unitPositions;

@@ -105,7 +105,7 @@ public class SelectedComponent : MonoBehaviour
 
             //If you reach the target position and stop look at the same direction as the leader. All soldiers look at the same direction.
             //This solution is a bit snappy but does the job.
-            if (Vector3.Distance(m_FormationPos, transform.position) <= m_NavMeshAgent.stoppingDistance)
+            if (Vector3.Distance(m_TargetPos, transform.position) <= m_NavMeshAgent.stoppingDistance)
             {
                 CopyRotationFrom(m_MyVirtualLeader.gameObject);
                 m_PositionReached = true;
@@ -114,9 +114,9 @@ public class SelectedComponent : MonoBehaviour
                 m_PositionReached = false;
 
 
-            //Go to the target position
-            //m_NavMeshAgent.SetDestination(m_TargetPos);
-            m_NavMeshAgent.SetDestination(m_FormationPos);
+           //Go to the target position
+           //m_NavMeshAgent.SetDestination(m_TargetPos);
+           m_NavMeshAgent.SetDestination(m_TargetPos);
             
         }
     }
@@ -194,7 +194,7 @@ public class SelectedComponent : MonoBehaviour
         int nAvoid = 0;
         foreach (Transform neighbour in m_NeighboursTranform)
         {
-            if (Vector2.SqrMagnitude(neighbour.position - transform.position) < 2)//flock.SquareAvoidanceRadius)
+            if (Vector2.SqrMagnitude(neighbour.position - transform.position) < 2)
             {
                 nAvoid++;
                 //Gives us the offset
