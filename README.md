@@ -1,13 +1,11 @@
 # Battle formations
 
 # Brief
-<p align="Justify">
 * Made with Unity and C# in 2 months 
 * 3D Real-time strategy game environment settup with camera controls and marquee selection
 * Units can be arranged in various battle formations algorithmically
 * A virtual leader is 5
 * Formation move in coordination
-</p>
 
 # Introduction
 <p align="Justify">
