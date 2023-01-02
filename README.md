@@ -1,6 +1,6 @@
 # Battle formations
 
-# Brief
+# Summary
 
 * Made with Unity and C# in 2 months 
 * 3D Real-time strategy game environment settup with camera controls and marquee selection
