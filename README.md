@@ -4,7 +4,7 @@
 
 * Made with Unity and C# in 2 months 
 * 3D Real-time strategy game environment settup with camera controls and marquee selection
-* Units can be arranged in various battle formations algorithmically
+* Units can be arranged in several battle formations algorithmically
 * A virtual leader object is responsible for handling formations
 * Units in formation move in coordination to a user-defined destination
 
@@ -29,7 +29,12 @@ The square formation varies in shape based on the number of units in a row or in
   Like the line formation, the leader should be centred on the middle of the first row and the formation should distribute evenly on both sides in relation to the leader. Therefore, the X value comes from the multiplication of the current column index and the user specified spacing minus the offset. The Y value is similar to the X value but without the offset. 
 </p>
 
+
+#### Wedge
+Similarly, to a square formation, the wedge formation is calculated from a grid. It starts from placing the leader alone at the top as its origin point. Then, to gradually add more units at each row to create a triangle shape, the number of columns in each row is increased by one after each row iteration. Next, the offset starts at 0 for the leader and decreases the spacing between units by half the more units are added in each row.  The X value is calculated by the product of the current column index and the specified spacing minus the offset. Lastly, the Z value equals to the product of the current row and the spacing between units.
+
 #### Column
 
 #### Line
-#### 
+A single line of units can be calculated by multiplying the index of each unit by the horizontal spacing. Since the virtual leader is placed in the middle of the formation, an offset is subtracted from the multiplication to scatter the positions uniformly across the line. The offset value is applied to all formations and is calculated by multiplying the number of units by the horizontal spacing divided by two to achieve even distribution across the line.
+
