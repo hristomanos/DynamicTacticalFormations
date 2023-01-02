@@ -1,4 +1,4 @@
-# Battle formations
+# Tactical battle formations
 
 # Summary
 
