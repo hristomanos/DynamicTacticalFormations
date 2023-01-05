@@ -33,7 +33,7 @@ The square formation varies in shape based on the number of units in a row or in
   Like the line formation, the leader should be centred on the middle of the first row and the formation should distribute evenly on both sides in relation to the leader. Therefore, the X value comes from the multiplication of the current column index and the user specified spacing minus the offset. The Y value is similar to the X value but without the offset. 
 </p>
 
-<img src="https://github.com/hristomanos/DynamicTacticalFormations/blob/main/WedgeFormation.png" width="300.75" height="441" />
+<img src="https://github.com/hristomanos/DynamicTacticalFormations/blob/main/SquareFormation.png" width="300.75" height="441" />
 
 #### Wedge
 <p align="Justify">
