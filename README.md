@@ -56,7 +56,7 @@ A single line of units can be calculated by multiplying the index of each unit b
 </p>
 
 <p align="center">
-<img src="https://github.com/hristomanos/DynamicTacticalFormations/blob/main/LineCode.png" width="967.5" height="297.75"/>
+<img src="https://github.com/hristomanos/DynamicTacticalFormations/blob/main/LineCode.png" width="645" height="198.5"/>
 </p>
 
 <p align="center">
