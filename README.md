@@ -45,8 +45,6 @@ The square formation varies in shape based on the number of units in a row or in
 <p align="Justify">
 Similarly, to a square formation, the wedge formation is calculated from a grid. It starts from placing the leader alone at the top as its origin point. Then, to gradually add more units at each row to create a triangle shape, the number of columns in each row is increased by one after each row iteration. Next, the offset starts at 0 for the leader and decreases the spacing between units by half the more units are added in each row.  The X value is calculated by the product of the current column index and the specified spacing minus the offset. Lastly, the Z value equals to the product of the current row and the spacing between units.
 </p>
-  
-![LineFormation](https://github.com/hristomanos/DynamicTacticalFormations/blob/main/WedgeFormation.png)
 
 <p align="center">
 <img src="https://github.com/hristomanos/DynamicTacticalFormations/blob/main/WedgeFormation.png"/>
@@ -56,6 +54,15 @@ Similarly, to a square formation, the wedge formation is calculated from a grid.
 <p align="Justify">
 A single line of units can be calculated by multiplying the index of each unit by the horizontal spacing. Since the virtual leader is placed in the middle of the formation, an offset is subtracted from the multiplication to scatter the positions uniformly across the line. The offset value is applied to all formations and is calculated by multiplying the number of units by the horizontal spacing divided by two to achieve even distribution across the line.
 </p>
+
+<p align="center">
+<img src="https://github.com/hristomanos/DynamicTacticalFormations/blob/main/LineCode.png" width="967.5" height="297.75"/>
+</p>
+
+<p align="center">
+<img src="https://github.com/hristomanos/DynamicTacticalFormations/blob/main/LineFormation.png"/>
+</p>
+
 
 ![LineCode](https://github.com/hristomanos/DynamicTacticalFormations/blob/main/LineCode.png)
 ![LineFormation](https://github.com/hristomanos/DynamicTacticalFormations/blob/main/LineFormation.png)
