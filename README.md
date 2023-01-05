@@ -16,8 +16,8 @@ Formations add tactical depth to offensive and defensive decision making when pl
 ## Demo video ##
 
 <p align="center">
-<a href="http://www.youtube.com/watch?feature=player_embedded&v=nTQUwghvy5Q" target="_blank">
- <img src="http://img.youtube.com/vi/ubPr9XzjK8Q/hqdefault.jpg" alt="Watch the video" width="240*2" height="180*2" border="10" />
+<a href="https://www.youtube.com/watch?v=ubPr9XzjK8Q&ab_channel=ChristomanosAnastasiou" target="_blank">
+ <img src="http://img.youtube.com/vi/ubPr9XzjK8Q/hqdefault.jpg" alt="Tactical formations demo" width="240*2" height="180*2" border="10" />
 </a>
 </p>
 
