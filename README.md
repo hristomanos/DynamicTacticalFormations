@@ -33,11 +33,14 @@ The square formation varies in shape based on the number of units in a row or in
   Like the line formation, the leader should be centred on the middle of the first row and the formation should distribute evenly on both sides in relation to the leader. Therefore, the X value comes from the multiplication of the current column index and the user specified spacing minus the offset. The Y value is similar to the X value but without the offset. 
 </p>
 
+![LineFormation](https://github.com/hristomanos/DynamicTacticalFormations/blob/main/SquareFormation.png)
 
 #### Wedge
 <p align="Justify">
 Similarly, to a square formation, the wedge formation is calculated from a grid. It starts from placing the leader alone at the top as its origin point. Then, to gradually add more units at each row to create a triangle shape, the number of columns in each row is increased by one after each row iteration. Next, the offset starts at 0 for the leader and decreases the spacing between units by half the more units are added in each row.  The X value is calculated by the product of the current column index and the specified spacing minus the offset. Lastly, the Z value equals to the product of the current row and the spacing between units.
 </p>
+  
+![LineFormation](https://github.com/hristomanos/DynamicTacticalFormations/blob/main/WedgeFormation.png)
   
 #### Line
 <p align="Justify">
