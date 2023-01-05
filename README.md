@@ -47,6 +47,10 @@ Similarly, to a square formation, the wedge formation is calculated from a grid.
 </p>
   
 ![LineFormation](https://github.com/hristomanos/DynamicTacticalFormations/blob/main/WedgeFormation.png)
+
+<p align="center">
+<img src="https://github.com/hristomanos/DynamicTacticalFormations/blob/main/WedgeFormation.png"/>
+</p>
   
 #### Line
 <p align="Justify">
