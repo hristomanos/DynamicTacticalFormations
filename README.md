@@ -44,5 +44,7 @@ Similarly, to a square formation, the wedge formation is calculated from a grid.
 A single line of units can be calculated by multiplying the index of each unit by the horizontal spacing. Since the virtual leader is placed in the middle of the formation, an offset is subtracted from the multiplication to scatter the positions uniformly across the line. The offset value is applied to all formations and is calculated by multiplying the number of units by the horizontal spacing divided by two to achieve even distribution across the line.
 </p>
 
+![LineCode](https://github.com/hristomanos/DynamicTacticalFormations/blob/main/LineCode.png)
 ![LineFormation](https://github.com/hristomanos/DynamicTacticalFormations/blob/main/LineFormation.png)
+
 
