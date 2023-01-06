@@ -2,7 +2,8 @@
 
 # Summary
 
-* Solo tech demo made with Unity and C# in 2 months 
+* Solo project
+* Tech demo made with Unity and C# in 2 months 
 * 3D Real-time strategy game environment setup with camera controls and marquee selection
 * Units can be arranged in several battle formations algorithmically
 * A virtual leader object is responsible for handling formations
